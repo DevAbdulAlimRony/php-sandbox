@@ -140,5 +140,47 @@ function fibonacci($old, $new, $end){
     //2. range(12, 20, 2): array from 12 to 20. stepping is 2, incrementing two.
 
 
+//String
+$s1 = '$name'; //output: Treat as string if single quote
+$s2 = "$name"; //output: Treat as variable if double quote
 
+//String like <pre>: heredoc, null doc if EOD in ''- no \n or that accepted
+$s3 = <<<EOD
+line 1 \n 
+line 2
+EOD;
+
+//ASCII Code: ord(), ASCC to Char: chr()
+//strlen(), substr(), strrev(), explode(), implode(), join(), str_split()- string extracting by multiple delimiter, strtok(), preg_split(), strpos() - string searching in string
+//str_replace(), str_ireplace()
+//trim(), ltrim(), rtrim(), wordwrap()
+// sscanf() - string extracting
+
+//nl2br()
+$ey = "hi \n bye";
+echo nl2br($ey);
+
+//Data Read Write from File
+
+//Session
+//Session is a storage system.  a session refers to a mechanism that allows a web server to store and maintain stateful information about a user's interactions with a website or web application across multiple HTTP requests and responses. Sessions are a critical part of web development because they enable the server to recognize and remember individual users, track their activities, and maintain personalized data for each user during their visit to the website.
+session_name('myapp');
+session_start([
+    'cookie_lifetime'=>60
+]);
+$_SESSION['']= ''; //It is saved now in server side.
+session_destroy();
+
+//Data Save on Browser by cookie. Session is saved on server, cookie is saved on browser.
+// setcookie(); $_COOKIE[]
+
+//Date Time
+echo time(); //unix epoch, unix timestamps- from january 1997 to now.
+echo mktime(0,0,0,12,1,2023); //unix time from a specific time
+echo microtime(true);
+echo date('d/m/y'); //Y=Full Year, F=Month Name
+echo date('dS M, Y h:i:s A'); //20th December 07:33:10 PM, if H- 13:
+echo date('z'); //what day in a year
+date_default_timezone_set("Asia/Dhaka");
+//strtotime()
 ?>
