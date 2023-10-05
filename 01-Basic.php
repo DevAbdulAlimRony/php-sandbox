@@ -183,4 +183,23 @@ echo date('dS M, Y h:i:s A'); //20th December 07:33:10 PM, if H- 13:
 echo date('z'); //what day in a year
 date_default_timezone_set("Asia/Dhaka");
 //strtotime()
+
+//Closure or Anonymous function (no name)- When a function use rarely, single function, no valid name, to use as a callback function
+$gr = function($name){
+    //...
+};
+$gr("Abdul");
+
+//Scoping of anonymous function, using parent function's var
+function scope(){
+    $value = 1;
+    $value2 = '';
+    $checkScope = function() use ($value, &$value2){
+        echo $value;
+
+        $value = 2; //It will not change, because we take it by value, not by reference.
+        $value2 = "changed" //It will be changed, because it passed by reference.
+    };
+    $checkScope();
+}
 ?>
