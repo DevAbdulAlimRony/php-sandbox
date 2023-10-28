@@ -282,4 +282,6 @@ $ssf->takeoff(); //don't need to call all method one after another.
 
 //Namespace: Namespace is a concept of oop to group our classes properly. namespaces are used to organize and encapsulate code into logical groups, preventing naming conflicts and providing better code organization and maintainability.  Advantages- Avoiding naming Conflicts,Logically organized Code, Improved AutoLoading, global namespace safety, versioning and maintenance etc.
 
+//Contract from Laravel or Something.
+
 ?>
