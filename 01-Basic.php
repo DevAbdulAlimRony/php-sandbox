@@ -47,7 +47,7 @@ switch($string){
 }
 
 //Operator Precedence
-$x = false || true; //false
+$x = false || true; // false
 $y = false or true; // ($y = false) or true. output: false.
 
 //Condition Control Alternative Structure
@@ -113,7 +113,7 @@ function fibonacci($old, $new, $end){
     //2. JSON Data: json_encode($array). json_decode()
 //Associative Array Data remove: unset()
 
-//Array Cloning: 
+//Array Cloning:
     //1. Copy by Value(Deep Copy): $newArray = $oldArray.
     //2. Copy by Reference(Shallow Copy): $newArray = &$oldArray. Original Variable will also be changed.
 

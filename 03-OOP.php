@@ -1,12 +1,12 @@
 <?php
    //class- object [method, property]
-   // Object-Oriented Programming (OOP) is a programming paradigm that uses objects, which are instances of classes, to structure and organize code. Object-Oriented Programming provides a structured, modular, and maintainable approach to software development. It promotes code reusability, abstraction, and encapsulation, making it an essential paradigm for building complex and maintainable software systems. 
+   // Object-Oriented Programming (OOP) is a programming paradigm that uses objects, which are instances of classes, to structure and organize code. Object-Oriented Programming provides a structured, modular, and maintainable approach to software development. It promotes code reusability, abstraction, and encapsulation, making it an essential paradigm for building complex and maintainable software systems.
 
    //A class is a blueprint or a template for creating objects. It defines the structure and behavior that objects created from the class will have.
 
-   //A class defines attributes (also known as fields or properties) that represent the data or state that objects of the class will have. These attributes can have default values or be initialized in constructors.
+   //A class defines attributes (also known as fields or properties) that represents the data or state that objects of the class will have. These attributes can have default values or be initialized in constructors.
 
-   //A class also defines methods (also known as functions or behaviors) that specify the actions or operations that objects of the class can perform. 
+   //A class also defines methods (also known as functions or behaviors) that specify the actions or operations that objects of the class can perform.
 
    //: An object is an instance of a class. It is a concrete, individual entity created from a class blueprint. If a class is like a blueprint for houses, an object is a specific house built based on that blueprint.
 
@@ -98,7 +98,7 @@
 
    //Interfaces define a contract or a set of rules that classes implementing the interface must adhere to. This contract specifies the methods that must be implemented by any class that claims to implement the interface. It ensures that classes provide specific functionality, making code more predictable and reliable.
    //Interfaces and abstract classes are both used in object-oriented programming (OOP) to define contracts and structures for classes.  A class can implement multiple interfaces.  Interfaces define method signatures (method names, parameters, and return types) but do not provide any method implementations, but abstract class can do implementation. All methods declared in an interface are implicitly public and abstract. A class can inherit from only one abstract class.
-   //Polymorphism allows objects of different classes to be treated as objects of a common base class or interface.
+   //Polymorphism allows objects of different classes to be treated as objects of a common base class or interface. (Example)
    interface BaseAnimal{
     public function isAlive();
     function canEat($p);
@@ -283,5 +283,5 @@ $ssf->takeoff(); //don't need to call all method one after another.
 //Namespace: Namespace is a concept of oop to group our classes properly. namespaces are used to organize and encapsulate code into logical groups, preventing naming conflicts and providing better code organization and maintainability.  Advantages- Avoiding naming Conflicts,Logically organized Code, Improved AutoLoading, global namespace safety, versioning and maintenance etc.
 
 //Contract from Laravel or Something.
-
+//PHP OOP from W3Schools
 ?>
