@@ -74,40 +74,90 @@ echo STATUS_1;
 // __TRAIT__, __METHOD__, __NAMESPACE__
 
 /*== 5. Data Types and Type Casting ==*/
-
-
-
-//Static data check
-if($food == 'z') //bad practice
-if('z' == $food) //good practice
-
-//Ternary Operator
-$n = 13;
-(12 == $n) ? "Twelve" : "A Number";
-
-//Switch Case Behavior
-$string = "5something";
-switch($string){
-case 5: //first letter 5 from 5Something. It will work
-//To prevent this behavior: case (string) 5:
-echo '5';
+// Scalar Types: bool, int, float, string
+// Compound Types: array, object, callable, iterable
+// Special Types: resource, null. Scalar and Special types are primitive data types
+// Checking Type: gettype($var)- Only Data Type, var_dump($var) - Data Type with Value
+function sum(int $x, int $y){
+$x = 5.5; // Though we type hinted int, but it will converted to float here. But not through error
+return $x + $y;
 }
+sum(2, 3); // But if here we take float when type hinted int, it will take just int part
+// declare(strict_types=1); If we write this very first at php script, then other type will throgh error
+// But even in strict mode, float expected hinted can take int
+$typeCast = (int)'5'; // Type Casting: String Casted to Int
 
-//Operator Precedence
-$x = false || true; // false
-$y = false or true; // ($y = false) or true. output: false.
+/*== 6. Boolean Data Type ==*/
+// Boolean: true or false is predefined constants in php
+// Not Case Sensitive- true/TRUE both are valid
+// integers 0, -0 = false, floats 0.0, minus 0.0 = false, '' = false, '0' = false, [] = false, null = false
+$booleanTest = true;
+echo $booleanTest; // Output: 1, if it false then shows nothing (empty string)
+// Because when we echo boolean var, it type casted to string automatically. So false dont show 0, it shows empty string
+echo is_bool($booleanTest); // check if boolean
 
-//Condition Control Alternative Structure
-if ($n % 2 == 0):
-echo 'Even';
-echo PHP_EOL; //End of the Line Constant
-elseif(true):
-//...
-else:
-echo 'Odd';
-endif; //switch...endswitch, while...endwhile
+/*== 7. Integer Data Type: Positive or Negative Numbers without Decimal Points ==*/
+// PHP_INT_MAX (0223372036854775807), PHP_INT_MIN
+$testInt = 0x2A; // Output: 42. We can take octal or hex, it will show as decimal
+// 05 will output to 5, 055 will output to 45. It is taking as octal
+// Prefix for Binary: 0b. 0b110 = 6
+$testInt2 = PHP_INT_MAX + 1; // When Maximum limit exceeds, it will auto converted to float
+// Casting: (int) or (integer)
+$testInt2 = (int) 5.98; // Output: 5 (rounded auto, point will get removed)
+$testInt3 = (int) '5ABC'; // Output: 5
+$testInt4 = (int) 'ABC'; // Output: 0. Also null and false will be 0
+$testInt4 = 2_000_0; // Output: 20000, PHP auto remove underscore from integer. Use Case: Long Number Readability
+$testInt4 = (int) '2_000_0'; // Output: 2, casted from string
+is_int($testInt);
 
-//For Loop Multiple Stepping
-for($i = 0, $j = 1; $i > 1; $i--, $j++){
-//...
-}
+/*== 7. Float Data Type: Positive or Negative Numbers with Decimal Points ==*/
+$testFloat = 13.5e3; // Output: 13500
+$testFloat2 = 13.5e-3; // Output: 0.0135
+// Can use Underscore like Integer. PHP_FLOAT_MAX, PHP_FLOAT_MIN
+echo NAN; // Output: NAN, when calculation cant be done
+echo log(-1); // Output: NAN
+echo PHP_FLOAT_MAX * 2; // Output: INF (infinity)
+// Check: is_infinite(), is_finite(), is_nan()
+// Casting: (float), (floatval)
+
+/*== 7. Null(constant) Data Type: null or NULL ==*/
+// When null casted to string, it will empty string
+// Check: is_null or use ===
+// If variable not defined, it will throgh error but will get null
+// Cat to int: 0, to arrayL [], boolean: false
+
+/*== 8. Expression and Operators ==*/
+#Arithmetic Operator: + - * / % **
+$number = '10'; // string
+var_dump(+$number); // for having + operator, it will cast to integer
+var_dump(fdiv(10, 0)); // Output: 10 % 0- Infinity, if fdiv not used throgh error for dividing by 0
+// fmod(10, -3) , Output: 1 (10 % 3). Use when mod of floating number
+#Assignment IOperator: = += +- *- /= %= **=
+#String Operator: . .=
+#Comparisn Operator: loose comparisn, strick comparisn, spaceship operator, conditional/ternary etc
+#Error Control Operator (@): Not Recommened to Use
+$errorControl = @file('foo.txt'); // As file not present it should throgh error, but it will not
+# Increment Decrement Operator (++ , --)
+$incr = 5;
+echo ++$incr; // Output: 6, pre increment then return
+echo $incr++; // Output: 5, because it returns first, then post increment
+echo $incr; // Output: 6
+# Logical Operactor (&& || ! and or xor)
+# Bitwise Operator ( & | ^ ~ etc) : Use Case(Encryption, Role Permission)
+# (+ == === !== <> !===) Array Operators
+    # Execution Operators
+    # Type Operator (instanceof)
+    # Nullsafe Operator (?)
+
+    # Operator Precedence and Associativity
+
+    /*== 9. String Data Type: When in Quote ==*/
+    $firstName = 'Abdul';
+    $lastName = "$firstName Alim"; // or, ${firstName} for Better Readability
+    echo $lastName;
+    echo $firstName[0]; // Output: A
+    $firstName[-2] = ''; // Converted to: Abul
+    // Declaration by Heredoc (treats that it is in double quote)
+    // $stringTest = three less than TEXT Line1 Lin2 TEXT; echo nl2br($stringTest). Use Case: like pre tag
+    // Declaration by Nowdoc:
+    //(treats that it is in single quote): three less than 'TEXT' - same just use sigle quote . Any space will render.
