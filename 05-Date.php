@@ -1,5 +1,5 @@
 <?php
-$currentTime = time(); // Current Unique Timestamps in seconds
+$currentTime = time(); // Current Unique Timestamps in seconds since January 1, 1970, 00:00:00 UTC
 echo $currentTime + 5 * 24 * 60 * 60; // Added 5 Days, Timestamp of 5 Days Ago
 echo $currentTime - 60 * 60 * 24; // Subtract 1 Day, Timestamp of Yesterday
 echo date('d/m/Y g:ia'); // Formated Date Time, g represents hour, i represents minute, a rpresent pm or am

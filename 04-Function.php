@@ -13,8 +13,8 @@ bar(); // foo() must be called to to call bar()
 function foo2(): int{
   return 1;
   // return '1'; It will work also, because we are not using strict type
-  // use : declare(strict_types=1); Then '1' will not work, throw error
   // return []; It will throw error, beacuse php cant convert it to integer
+  // use : declare(strict_types=1); Then '1' will not work, throw erro
 }
 
 function voidFunc(): void{
@@ -91,7 +91,7 @@ function foo9(){
     echo $x;
 }
 // Super Global: $GLOBALS[]
-// static variable: use keyword static
+// static variable: use keyword static:-
 //  variables that retain their value even after the function or method in which they are defined has finished execution. Unlike regular variables, static variables are not destroyed and recreated each time the function is called. 
 
 // Variable Function

@@ -1,11 +1,14 @@
 <?php
 /*== 1. Include Files: When we split Files and Want to Import it into Another ==*/
-include 'file.php'; // If not found, will give warning and execute line
+include 'file.php'; // If not found, will give warning and execute next line
 require 'file.php'; // If not found, will give error and stop executing
 include_once 'file.php'; // Include file if hasn't been included already.
-// Say in file.php- we have just echo "Hey". If we include file.php two times, it will show two times. But if we use include_once many times, show just one time
+// Say in file.php- we have just echo "Hey". If we include file.php two times, it will show 'Hey' two times. But if we use include_once many times, show just one time
 // require_once
 var_dump(include 'file.php'); // If file present, return true. If not false.
+
+// ob_ functions are part of PHP's output buffering mechanism, where ob stands for output buffer. 
+// This allows you to control when and how the output is sent to the browser
 ob_start();
 include './file.php';
 $htmlContent = ob_get_clean();
@@ -15,13 +18,13 @@ echo  $htmlContent; // Now, it will show output of html
 /*== 2. Error Handling ==*/
 function errorHandler(int $type, string $msg, ?string $file = null, ?int $line = null){
     echo $type . ': ' . $msg .  ' in ' . $file .  'on line ' . $line;
-    exit;
+    exit; // to terminate script execution, no further code is executed
 }
 error_reporting(E_ALL & ~E_WARNING); // report all except warning error
 set_error_handler('errorHandler', E_ALL);
 
 /*== 3. File System ==*/
-$dir = scandir(__DIR__);
+$dir = scandir(__DIR__); // Magic Constant __DIR__ will give file's directory's parent
 var_dump($dir[2]); // ... 06-MidLevel.php
 // check: is_file($dir[2]), is_dir($dir[2])
 makdir('foo'); // Folder Created
@@ -63,7 +66,7 @@ rename('foo.txt', 'bar.txt'); // File Renaming
 // XAMPP- APACHE - Config (or manually from folder- find php.ini)
 // ; indicates comments
 // All Details: https://www.php.net/manual/en/ini.list.php
-ini_set('error_reporting', E_ALL & ~E_WARNING); // Error Reporting will not show
+ini_set('error_reporting', E_ALL & ~E_WARNING);
 ini_set('display_errors', 0); // Error will not display, in production
 ini_set('max_execution_time', 3);
 var_dum(ini_get('memory_limit')); // 512M

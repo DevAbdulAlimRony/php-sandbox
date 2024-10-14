@@ -1,7 +1,7 @@
 <?php
 /*== 1. Control Structure ==*/
 // if, else, elseif, else if. Another Approach: if: elseif: endif;
-// The endif keyword is used to mark the end of an if conditional which was started with the if(...):
+// The endif keyword is used to mark the end of an if conditional which was started with the if():
 
 /*== 2. Loop ==*/
 // While Loop or while: endwhile;
@@ -53,5 +53,83 @@ $paymentStatusDisplay = match($paymentStatus){
 }; // Return: Paid
 echo $paymentStatusDisplay;
 // dont need break in match expression, switch always need break
-// We can give any default value likeswitch, you have to specify all cases. If Not, it will through error
+// No Default Value System. You have to specify all cases. If Not, it will through error
 // Switch does loose comparisn, match does strict comparisn
+
+// Use Cases:
+//  A for loop is generally designed for cases where the starting condition, iteration, and stopping condition are all known upfront.
+//  The While loop is appropriate for dynamic condition, When the number of iterations is not known in advance and depends on a condition.
+// while It provides flexibility when iterating over database results or user input.
+//  In a situation where you want to ensure that the loop runs at least once, a do-while loop is ideal.
+// foreach is designed for iterating over arrays or objects and is more readable and less error-prone than using a for loop when you just need to access each element in a collection.
+// Use Switch When you need to check a variable against many different values and execute different code blocks depending on the match.
+
+// Real Example:
+// For Loop: pagination
+// while: Data Fetching-
+$query = "SELECT * FROM orders WHERE customer_id = 123";
+$result = $conn->query($query);
+// Keep fetching rows until there are no more results, We dont know how many row so we didnt use for loop
+while ($order = $result->fetch_assoc()) {
+    echo "Order ID: " . $order['order_id'] . "<br>";
+    echo "Total: " . $order['total'] . "<br><br>";
+}
+
+// do...while:
+$maxAttempts = 3;
+$attempts = 0;
+$isLoggedIn = false;
+
+do {
+    // Simulating a login attempt (this would usually involve checking a database)
+    $username = readline("Enter username: ");
+    $password = readline("Enter password: ");
+    
+    // Simulate correct credentials
+    if ($username === 'user' && $password === 'password') {
+        $isLoggedIn = true;
+        echo "Login successful!\n";
+    } else {
+        $attempts++;
+        echo "Invalid credentials. Try again.\n";
+    }
+} while (!$isLoggedIn && $attempts < $maxAttempts);
+
+if (!$isLoggedIn) {
+    echo "Too many failed attempts. Access denied.\n";
+}
+
+// Switch..Case
+$userRole = 'editor';
+switch ($userRole) {
+    case 'admin':
+        echo "Welcome to the Admin Dashboard!";
+        break;
+    case 'editor':
+        echo "Welcome to the Editor's Dashboard!";
+        break;
+    case 'subscriber':
+        echo "Welcome to the Subscriber's Dashboard!";
+        break;
+    case 'guest':
+        echo "Welcome, Guest! Please log in to access more features.";
+        break;
+    default:
+        echo "Unknown role. Please contact support.";
+        break;
+}
+
+// Match Expression: Returning a message based on HTTP status code
+$statusCode = 404;
+
+$message = match($statusCode) {
+    200 => 'OK',
+    201 => 'Created',
+    400 => 'Bad Request',
+    404 => 'Not Found',
+    500 => 'Internal Server Error',
+    default => 'Unknown Status',
+};
+
+echo $message;  // Output: Not Found
+?>

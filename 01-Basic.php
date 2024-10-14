@@ -2,7 +2,7 @@
 /*== 1. Environment Setup ==*/
 // Web Server: Client - Server (Hardware) - Web Server (Apache/Nginx Software)
 // Ways to Install: Manual Installationin and Configuration in OS, XAMPP type Server(Preconfigured, Cant Run Multiple Version of PHP or Database, Not For Production), Virtual Machine/Docker (Better Alternative)
-// Run PHP Script in Command Line: cd directory - php index.php
+// Run PHP Script in Command Line: cd directory -> php index.php
 
 /*== 2. Basic Syntax ==*/
 echo 'PHP Print'; // If close php here, no need semicolon
@@ -10,9 +10,9 @@ echo 'PHP', '', 'Print'; // Same Output as Above
 print 'PHP Print'; // Print has a return value 1, same Output of Echo
 echo print "PHP Print"; // Output: PHP Print1 , added 1 at last
 // Print could be used in expression like if(print()), echo cant: print echo will not work
-print('PHP Print'); // Same as print
 echo 'Abdul\'s'; // Escaping Quotes
-echo "Abdul's"; // Escaping Quotes
+echo "OK\"Nothing\\\\Tata\'\$"; // Escaping Characters
+$path = 'C:\\Program Files\\Test';
 $printR = array ('a' => 'apple', 'b' => 'banana', 'c' => array ('x', 'y', 'z')); // To Test
 print_r($printR); // Print Array in Human Readable Way
 // Not So Much Used: printf()- with format specifier like c programming, sprintf()
@@ -40,7 +40,7 @@ $y = &$x; // Now, variable is assigned by reference- Output: 3, anytime x change
 $fname = 'Abdul';
 $lname = 'Alim';
 printf('Full Name: %2$s %1$s', $lname, $fname);
-echo "\n";
+echo "\n"; // Line Break
 // Variable Variables (Create Variable Dynamically)
 $foo = bar;
 $$foo = baz; // $$foo actually means $bar
@@ -65,7 +65,7 @@ echo constant('PI');
 echo PI; // Output: 3.14
 echo defined('PI'); // Output: 1, checking if any constant defined
 const STATUS_PAID = 'paid'; // Define constant using const keyword, will define at compile time.
-// So, we cant use const in controlled structure like loopor if-else, but can use define() in controlled structure
+// So, we cant use const into controlled structure like loop or if-else, but can use define() in controlled structure
 // When static data, can use const. When dynamic data, can use define(). Ex-
 define('STATUS_' . $x, 4);
 echo STATUS_1;
@@ -74,7 +74,8 @@ echo STATUS_1;
 // __TRAIT__, __METHOD__, __NAMESPACE__
 
 /*== 5. Data Types and Type Casting ==*/
-// Scalar Types: bool, int, float, string
+// Scalar Types: bool, int, float, string, has no dedicated 'double' but if we check float using gttype() it will show
+// double, because float and double same in php
 // Compound Types: array, object, callable, iterable
 // Special Types: resource, null. Scalar and Special types are primitive data types
 // Checking Type: gettype($var)- Only Data Type, var_dump($var) - Data Type with Value
@@ -102,7 +103,7 @@ $testInt = 0x2A; // Output: 42. We can take octal or hex, it will show as decima
 // 05 will output to 5, 055 will output to 45. It is taking as octal
 // Prefix for Binary: 0b. 0b110 = 6
 $testInt2 = PHP_INT_MAX + 1; // When Maximum limit exceeds, it will auto converted to float
-// Casting: (int) or (integer)
+// Casting: (int) or (integer) or +$var
 $testInt2 = (int) 5.98; // Output: 5 (rounded auto, point will get removed)
 $testInt3 = (int) '5ABC'; // Output: 5
 $testInt4 = (int) 'ABC'; // Output: 0. Also null and false will be 0
@@ -111,30 +112,31 @@ $testInt4 = (int) '2_000_0'; // Output: 2, casted from string
 is_int($testInt);
 
 /*== 7. Float Data Type: Positive or Negative Numbers with Decimal Points ==*/
-$testFloat = 13.5e3; // Output: 13500
+$testFloat = 13.5e3; // Output: 13500, floating-point number in scientific notation, equivalent to 13.5 × 10³
 $testFloat2 = 13.5e-3; // Output: 0.0135
 // Can use Underscore like Integer. PHP_FLOAT_MAX, PHP_FLOAT_MIN
 echo NAN; // Output: NAN, when calculation cant be done
 echo log(-1); // Output: NAN
 echo PHP_FLOAT_MAX * 2; // Output: INF (infinity)
-// Check: is_infinite(), is_finite(), is_nan()
+// Check: is_infinite(), is_finite(), is_nan(), is_float
 // Casting: (float), (floatval)
 
 /*== 7. Null(constant) Data Type: null or NULL ==*/
 // When null casted to string, it will empty string
 // Check: is_null or use ===
 // If variable not defined, it will throgh error but will get null
-// Cat to int: 0, to arrayL [], boolean: false
+// Cast to int: 0, to array: [], boolean: false
 
 /*== 8. Expression and Operators ==*/
 #Arithmetic Operator: + - * / % **
 $number = '10'; // string
 var_dump(+$number); // for having + operator, it will cast to integer
-var_dump(fdiv(10, 0)); // Output: 10 % 0- Infinity, if fdiv not used throgh error for dividing by 0
+var_dump(fdiv(10, 0)); // Output: 10 % 0- Infinity, if fdiv not used throgh error for 10 / 0
 // fmod(10, -3) , Output: 1 (10 % 3). Use when mod of floating number
-#Assignment IOperator: = += +- *- /= %= **=
+// fdiv and fmod works on floating point numbers to divide and modulus
+#Assignment Operator: = += +- *- /= %= **=
 #String Operator: . .=
-#Comparisn Operator: loose comparisn, strick comparisn, spaceship operator, conditional/ternary etc
+#Comparisn Operator: loose comparisn, strct comparisn, spaceship operator, conditional/ternary etc
 #Error Control Operator (@): Not Recommened to Use
 $errorControl = @file('foo.txt'); // As file not present it should throgh error, but it will not
 # Increment Decrement Operator (++ , --)
@@ -147,8 +149,8 @@ echo $incr; // Output: 6
 # (+ == === !== <> !===) Array Operators
     # Execution Operators
     # Type Operator (instanceof)
-    # Nullsafe Operator (?)
-
+    # Nullsafe Operator (??)
+    # Ternary Operator
     # Operator Precedence and Associativity
 
     /*== 9. String Data Type: When in Quote ==*/
@@ -157,7 +159,7 @@ echo $incr; // Output: 6
     echo $lastName;
     echo $firstName[0]; // Output: A
     $firstName[-2] = ''; // Converted to: Abul
-    // Declaration by Heredoc (treats that it is in double quote)
-    // $stringTest = three less than TEXT Line1 Lin2 TEXT; echo nl2br($stringTest). Use Case: like pre tag
+    // Declaration by Heredoc (treats that it is in double quote). Use Case: like pre tag, consider all white space
+    // $stringTest = three less than TEXT Line1 Lin2 TEXT; echo nl2br($stringTest).
     // Declaration by Nowdoc:
     //(treats that it is in single quote): three less than 'TEXT' - same just use sigle quote . Any space will render.

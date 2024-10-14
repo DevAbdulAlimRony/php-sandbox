@@ -1,5 +1,5 @@
 <?php
-/*== 1. Array Declaration ==*/
+/*== 1. Array Declaration and Checking ==*/
 $array1 = [1, 2, 3];
 $array2 = array(1, 2, 3);
 echo $array1[1]; // Output: 2 (at index 1)
@@ -18,6 +18,12 @@ echo $array3['php'];
 $newKey = 'Javascript';
 $array[$newKey] = 'ES6'; // Pushed a New Key Value into Array Dynamically
 
+$firstname = "Peter";
+$lastname = "Griffin";
+$age = "41";
+$result = compact("firstname", "lastname", "age"); // Create array containing variables and their values
+$number = range(0,5); // Creates array from 0 to 5
+
 $array4 = [0 => 'foo', 1 => 'bar', '1' => 'baz']; // Index 1's value will be baz, becaue it is overrode
 $array5 = [true => 'a', 1 => 'b', '1' => 'c', 1.8 => 'd', null => 'e'];
 print_r($array5); // Output: 1 => d, [] => e. 
@@ -33,25 +39,20 @@ $x = 3;
 var_dump((array) $x); // Array Casting. Output: 0 => 3. 
 // Null will be an empty array if casted
 
-$firstname = "Peter";
-$lastname = "Griffin";
-$age = "41";
-$result = compact("firstname", "lastname", "age"); // Create array containing variables and their values
-$number = range(0,5); // Creates array from 0 to 5
-
 /*== 1. Array Functions ==*/
 $items = ['a' => 1, 'b' => 2, 'c' => 3, 'd' => 4, 'e' => 5];
-echo count($items); // Length of the Array
+echo count($items); // Length of the Array, or sizeof()
 array_push($array2, 4, 5); // Push as Last Items. Pass by Reference, It changed the original array
 array_pop($items); // Remove Last Element
 array_shift($items); // Remove First Element
+array_unshift($items, 4); // Add at first
 // After Removing, index will be reindexing auto. for array6, if we remove, then indexing will automatic not 50
 // But rather than 50, if it was a string, it will not be re-indexed
 // But, unset() dont reindex if we destroy any key using it
 array_key_exists('a', $items); // Check if key exists in an array
 array_chunk($items, 2); //  Array will be divided, 0 => [0 => 1, 1 => 2], 1 => []...
 array_chunk($items, 2, true); //  Key will be reserved, 0 => [a => 1, b => 2], 1 => []...
-array_combine($array1, $array2); // First Array's Value will be Key, Second's will be Value. Length must be same.
+array_combine($array1, $array2); // First Array's Value will be Key, Second's value will be Value. Length must be same.
 $even = array_filter($aray1, fn($number) => $number % 2 === 0); // $number performs filter operation on value and new array return
 $even2 = array_filter($aray1, fn($number) => $number % 2 === 0, ARRAY_FILTER_USE_KEY); // Now $number argument performs operation on key
 $even3 = array_filter($aray1, fn($number, $key) => $number % 2 === 0, ARRAY_FILTER_USE_BOTH); // Can use both key and value now
@@ -90,7 +91,7 @@ usort($array1, fn($a, $b) => $a <> $b); // Sort Based on Callback.
 // usort Remove Custom Keys, and Use Numeric Keys Instead
 
 // Array Destructuring (De structure array into separate variables)
-list($a, $b, $c) = $array1; // or, shorter version
+list($a, $b, $c) = $array1; // or, shorter version:
 [$a, $b, $c] = $array1;
 [$a, , $c] = $array1; // 2nd element is skipped
 // Destructing can be from nested array also: [$a, $b , [$c, $d]]
@@ -128,7 +129,7 @@ $a = array(
 // array_splice()	Removes and replaces specified elements of an array
 // array_sum()	Returns the sum of the values in an array
 // array_unique()	Removes duplicate values from an array
-// array_walk()	Applies a user function to every member of an array
+// array_walk()	Applies a user function to every member of an array, but on single array and change original array, no return value
 // current()	Returns the current element in an array
 // end()	Sets the internal pointer of an array to its last element
 // extract()	Imports variables into the current symbol table from an array
