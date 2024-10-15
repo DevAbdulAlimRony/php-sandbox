@@ -149,7 +149,7 @@ echo $incr; // Output: 6
 # (+ == === !== <> !===) Array Operators
     # Execution Operators
     # Type Operator (instanceof)
-    # Nullsafe Operator (??)
+    # Nullsafe Operator (?), Null Colasing Operator- ??
     # Ternary Operator
     # Operator Precedence and Associativity
 

@@ -1,0 +1,9 @@
+- docker-compose.yml file ready
+- Docker Engine Run
+- go to docker directory from cmd
+- run command on wsl2: docker-compose up (It will install all plugin at first and it must be on run to run project)
+- docker-compose up -d (Running on Background)
+- Run Project on : localhost:8000
+- docker ps (This command will show currently running container)
+- docker-comose up -d --build (to build our image)
+- ssh into docker container: docker exec -it YourDockercontainerName bash (Run composer command here)
