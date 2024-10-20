@@ -1,7 +1,6 @@
 <?php
-namespace App;
+namespace App\Interface;
 
-// multiple interface implement: implements Interface1, Interface2
 class CollectionAgency implements DebtCollector{
     public function __construct(){
         

@@ -80,3 +80,9 @@ ini_set('max_execution_time', 3);
 // DocumentRoot: htdocs. It can be different in production
 // Virtual Hosts: conf/extra/httpd-vhosts.conf: To Configure Virtual Host (We can run multiple website on single server at a time)
 // htaccess file: Distributed Configuration File (Dont Use if dont need to)
+
+/*== 6. Super Globals ==*/
+// Build In Variables which are always Available in All Scopes
+// $GLOBALS, $_SERVER, $_REQUEST, $_POST, $_GET, $_FILES, $_ENV, $_COOKIE, $_SESSION
+print_r($_SERVER); //  contains info about server and execution environment, vary server to server depending on your server configuration
+// Use Case: Building Basic Routing

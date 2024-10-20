@@ -1,11 +1,10 @@
 <?php
-// Namespace: better organization by grouping classes, same name to be used for more than one class
+// Namespace: Better organization by grouping classes, same name to be used for more than one class
 // Let's say, we have classes with same name in different directory without namespace, it will give error
 // We can think namespace as virtual directory spaces for our classes
-declare(strict_types = 1);
 // namespace Bkash;
 // Namespacing followed by directory structure is standard
-namespace PaymentGateWay;
+namespace App\Autoload;
 
 class Bkash{
 

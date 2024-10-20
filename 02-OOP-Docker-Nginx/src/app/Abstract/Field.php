@@ -1,5 +1,5 @@
 <?php
-namespace App;
+namespace App\Abstract;
 
 // Abstract class is like a template or the Base Class that the child or concrete class can be extended from
 // Abstract class cannot be instantiate, we cannot create object directly from abstract class

@@ -1,8 +1,9 @@
 <?php
 declare(strict_types = 1);
 
+namespace App\CustomException;
+
 class Customer {
-    public ?PaymentProfile $paymentProfile = null;
     public $amount = 0;
 
     // Exception: An Exception is Simply an Object of an Exception Class
