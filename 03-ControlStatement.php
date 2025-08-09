@@ -15,6 +15,7 @@ $i = 0;
 do{
     echo $i++;
 }while($i <= 15);
+
 // For Loop:
 for ($x = 0; $x <= 10; $x++) {
   echo "The number is: $x <br>";
@@ -59,7 +60,7 @@ echo $paymentStatusDisplay;
 // Use Cases:
 //  A for loop is generally designed for cases where the starting condition, iteration, and stopping condition are all known upfront.
 //  The While loop is appropriate for dynamic condition, When the number of iterations is not known in advance and depends on a condition.
-// while It provides flexibility when iterating over database results or user input.
+//  while It provides flexibility when iterating over database results or user input.
 //  In a situation where you want to ensure that the loop runs at least once, a do-while loop is ideal.
 // foreach is designed for iterating over arrays or objects and is more readable and less error-prone than using a for loop when you just need to access each element in a collection.
 // Use Switch When you need to check a variable against many different values and execute different code blocks depending on the match.
@@ -132,4 +133,3 @@ $message = match($statusCode) {
 };
 
 echo $message;  // Output: Not Found
-?>

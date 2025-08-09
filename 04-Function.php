@@ -14,7 +14,7 @@ function foo2(): int{
   return 1;
   // return '1'; It will work also, because we are not using strict type
   // return []; It will throw error, beacuse php cant convert it to integer
-  // use : declare(strict_types=1); Then '1' will not work, throw erro
+  // use : declare(strict_types=1); Then '1' will not work, throw error
 }
 
 function voidFunc(): void{
@@ -29,11 +29,13 @@ function foo3(): ?int {
 
 // Type Hinting Multiple Types by Pipe Char
 function foo4(): int|float|array {
+  return 2;
   // We can return int or float or array now
 }
 
 // Accepting Lot of Different Return Types
 function foo5(): mixed{
+  return 2;
   // we cannot use nullable ? with mixed
   // Any Return Type
 }
@@ -90,6 +92,8 @@ function foo9(){
     $x = 10;
     echo $x;
 }
+echo $x; // output will be 10, because x got global in function
+
 // Super Global: $GLOBALS[]
 // static variable: use keyword static:-
 //  variables that retain their value even after the function or method in which they are defined has finished execution. Unlike regular variables, static variables are not destroyed and recreated each time the function is called. 
