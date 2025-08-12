@@ -30,6 +30,7 @@ class Magic{
             call_user_func_array([$this, $name], $arguments);
         } // if method exists call that with arguments
     } // For static method- __callStatic()
+    
     public function __toString(): string{
         return 'string';
         // When we print object directly (echo $object), hooked into it
