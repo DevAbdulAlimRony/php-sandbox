@@ -23,23 +23,23 @@ unset($invoice3);
 var_dump($map); // Output: 1
 // Weakma Uses: Caching, Memorization, Prevent Memory Leaks
 
+// PHP Attributes
+// Attributes offer the ability to add structured, machine readable metadat information on declarations in code. 
+// Classes, methods, functions, parameters, properties and class constants can be the target of an attribute.
 
-//* New Things in PHP 8.1: *//
-// Run PHP script in different versions here: https://3v4l.org/
-// Array Unpacking by string key
-// Enumerations or Native Support of Enum
-// Read Only Properties: We need getters for private property. But if we wanna remove this getters and make it public and still want to make acting like private then,
-// public function __constrcut(public readonly string $street);
-//Now we can access the property from different class, but cant change state of the property for that readonly keyword. T
-// Readonly property must define type, if not type like string int defined, it will throw error.
-// We cannot set default value for the readonly property
-// Pure Intersection type: private Syncable&Payable $entity (Previous, we could use just or like Payable|PayInterface). 
-// Cannot do & | at a time. Only class type is supported for intersection type not int string type thing, because one thing cant be int and string at a time.
-// Never Retun Type: Any function that never return a value, maybe just throw a exception or exit the code. public function foo(): never {echo 1; exit;}
-// Void vs Never: Calling by never expect to exit the execution.
-// Array_is_list: An array is a list when keys are ordered sequentially. Like this- [1,2,3], not this- [1 = 1, 2 => 2] here fist key is 1 , not 0. To check if an array is  a list, we can use that method.
-// First Class callable Syntax: $closure = sum(...) - Return a Callable Object. Research why need?
-// New keyword using in initialization: public function __construct(public Address $address = new Address())
-// Final Constants: final public const STATUS = 'PAID'. Now, if we inherit from this, we cant change this constant in that child.
-// Support of Fibers
-// Usage of static variables of Inheriheted method
+// Example of Symphony Annotation
+class InvoiceController{
+    /**
+     * @Route("/invoices", name="invoice_list")
+     */
+    public function index(){}
+}
+
+// Same Code with Attribute in Symphony
+class InvoiceController2{
+    // #[Route('/invoices', name: 'invoice_list')]
+    // Start with #, I added // at first so that no error show because We have no Route configured now.
+    public function index(){}
+}
+// Its not just an annotation, it can be used to automatically call....
+// Ex- Simple Router with Attributes, Research about more example in laravel.
