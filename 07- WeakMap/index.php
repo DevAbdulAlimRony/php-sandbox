@@ -26,6 +26,58 @@ var_dump($map); // Output: 1
 // PHP Attributes
 // Attributes offer the ability to add structured, machine readable metadat information on declarations in code. 
 // Classes, methods, functions, parameters, properties and class constants can be the target of an attribute.
+// PHP Attributes (introduced in PHP 8) are structured metadata that you can attach to: methods, properties, parameters, functions
+// They look like annotations but are native, parsed by PHP itself, not comments.
+// Attributes allow you to describe behavior without code logic, making your code cleaner and more declarative.
+// Before PHP 8, developers used DocBlock annotations, But these were just comments. PHP could not read them natively. Frameworks needed heavy parsing libraries like Doctrine Annotation Reader.
+// Use Cases: Routing definitions, Validation rules, ORM mapping (database entity definitions), Authorization & middleware, Dependency Injection configuration, Serialization control, DTO mapping, Event listeners, Command definitions.
+// Think of them as structured comments that your application can read and act upon at runtime. 
+// Make validations reusable, structured, and clean.
+class CreateUserDTO
+{
+    #[Email]
+    #[NotBlank]
+    public string $email;
+
+    #[Length(min: 8)]
+    public string $password;
+}
+
+// Describe database structure directly on the class.
+#[Entity]
+#[Table(name: 'users')]
+class User
+{
+    #[Id]
+    #[Column(type: 'integer')]
+    #[GeneratedValue]
+    public int $id;
+
+    #[Column(type: 'string', length: 255)]
+    public string $name;
+}
+
+// Middleware / Authorization Mapping
+#[RequiresRole('admin')]
+function deleteUser() {
+   // ...
+}
+
+// CLI Command Definition
+#[Command(name: 'cache:clear')]
+class ClearCacheCommand
+{
+    // ...
+}
+
+// Event Listener Attributes
+#[AsEventListener(event: UserRegistered::class)]
+class SendWelcomeEmail {}
+
+// Dependency Injection Configuration
+#[Inject(Logger::class)]
+// public $logger;
+
 
 // Example of Symphony Annotation
 class InvoiceController{
@@ -43,3 +95,11 @@ class InvoiceController2{
 }
 // Its not just an annotation, it can be used to automatically call....
 // Ex- Simple Router with Attributes, Research about more example in laravel.
+
+// Using Attribute in Laravel:
+// Laravel's core framework currently does not provide native PHP attribute support for routing and middleware. However, PHP attributes can still be effectively used in Laravel through custom implementations and third-party packages.
+// composer require spatie/laravel-route-attributes
+// Every attribute must be backed by a class. Write above the class: #[Attribute]
+// You can control where attributes can be applied using target flags: #[Attribute(Attribute::TARGET_METHOD | Attribute::TARGET_FUNCTION)]
+// TARGET_CLASS, TARGET_FUNCTION, TARGET_METHOD, TARGET_PROPERTY, TARGET_CLASS_CONSTANT, TARGET_PARAMETER, TARGET_ALL (default)
+// To access attributes at runtime, you use PHP's Reflection API.
