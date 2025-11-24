@@ -29,5 +29,4 @@ class Close{
         // Gets data as argument, extra advantage over wakeup
         // $this->amount = base64_decode($data->amount);
     }
-
 }
