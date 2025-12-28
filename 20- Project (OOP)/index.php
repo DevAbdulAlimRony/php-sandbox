@@ -45,3 +45,8 @@ password_hash('user_password', PASSWORD_BCRYPT, ['cost' => 12]);
 // session_regenerate_id().
 // Some browser's session id will be cleared if we close the browser. Chromium type browser stores session id, so we wont logged out after closing the browser.
 // session_set_cookie_params(['secure' => true, 'httponly' => true, 'samesite' => 'lax'])
+
+// To make user's session, we can make an authenticated middleware 
+// We can create auth interface user interface etc to abstract from the middleware to make code quality better 
+// For logout, just set the session unset and make user object null within the auth class.
+// We can implement session interface to start global session, validations and close.
