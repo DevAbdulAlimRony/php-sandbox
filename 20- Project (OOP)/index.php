@@ -50,3 +50,4 @@ password_hash('user_password', PASSWORD_BCRYPT, ['cost' => 12]);
 // We can create auth interface user interface etc to abstract from the middleware to make code quality better 
 // For logout, just set the session unset and make user object null within the auth class.
 // We can implement session interface to start global session, validations and close.
+// Try always making interface rather than concrete class like Session implementation, in future different type Session implementation can come.
