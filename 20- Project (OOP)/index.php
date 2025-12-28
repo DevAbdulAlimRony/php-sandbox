@@ -51,3 +51,13 @@ password_hash('user_password', PASSWORD_BCRYPT, ['cost' => 12]);
 // For logout, just set the session unset and make user object null within the auth class.
 // We can implement session interface to start global session, validations and close.
 // Try always making interface rather than concrete class like Session implementation, in future different type Session implementation can come.
+
+// CSRF(Cross-Site Request Forgery) Attack:
+// CSRF is an attack that forces an end user to execute unwanted actions on a web application in which they're currently authenticated.
+// Like attacker send a lin via email or chat to trick the user into executing actions of attacker's choosing
+// For an Example- Bkash OTP
+// Most of the frameworks provide csrf token protection.
+
+// XSS (Coss Site Scripting)
+// a type of injection in which malicious scripts are injected
+// Maliscious code into the form..
