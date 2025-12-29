@@ -45,3 +45,93 @@ password_hash('user_password', PASSWORD_BCRYPT, ['cost' => 12]);
 // session_regenerate_id().
 // Some browser's session id will be cleared if we close the browser. Chromium type browser stores session id, so we wont logged out after closing the browser.
 // session_set_cookie_params(['secure' => true, 'httponly' => true, 'samesite' => 'lax'])
+
+// Factory Pattern Explained:
+class EmailSender
+{
+    public function send(string $message)
+    {
+        echo "Sending EMAIL: $message";
+    }
+}
+
+class SmsSender
+{
+    public function send(string $message)
+    {
+        echo "Sending SMS: $message";
+    }
+}
+
+
+class MessageService
+{
+    public function send(string $type, string $message)
+    {
+        if ($type === 'email') {
+            $sender = new EmailSender();
+        } elseif ($type === 'sms') {
+            $sender = new SmsSender();
+        }
+
+        $sender->send($message);
+    }
+}
+// The problem is here, MessageSErvice knows too much and it will groow in future.
+// The solution is the factory pattern:
+interface MessageSenderInterface
+{
+    public function send(string $message): void;
+}
+class EmailSender2 implements MessageSenderInterface
+{
+    public function send(string $message): void
+    {
+        echo "Sending EMAIL: $message";
+    }
+}
+
+class SmsSender2 implements MessageSenderInterface
+{
+    public function send(string $message): void
+    {
+        echo "Sending SMS: $message";
+    }
+}
+class MessageSenderFactory
+{
+    public function make(string $type): MessageSenderInterface
+    {
+        return match ($type) {
+            'email' => new EmailSender2(),
+            'sms'   => new SmsSender2(),
+            default => throw new Exception('Unknown sender type'),
+        };
+    }
+}
+class MessageService2
+{
+    public function __construct(
+        private MessageSenderFactory $factory
+    ) {}
+
+    public function send(string $type, string $message)
+    {
+        $sender = $this->factory->make($type); // You can pass type here as email or sms, or user selected value in request.s
+        $sender->send($message);
+    }
+}
+
+// AJAX: 
+// Asynchronous JavaScript and XML) is a set of web development techniques used to create dynamic and interactive web applications that can send and receive data from a server in the background without reloading the entire page
+// Exp- We get the category name and send to the frontend to bind in edit modal.
+// xhr
+
+// For sorting, we should provide default sorting direction and column to make sure no sql injection can happen.
+
+// For search, We have to ensure that %, _, signs can be searched also, because by default it wont be searched.
+// Those characters are called wildcard chars which are used in query params.
+// To solve this, we can make those chars into / escaping as we do in html.
+// $serach = str_replace(['%', '-'], ['\%', '\_', $search])
+// Easy Way(use addcslashes- this basically use backslashes for given characters)
+// $query->where('c.name ILIKE :name')->setParameter('name', '%', addcslashes($search, '%_' . '%'));
