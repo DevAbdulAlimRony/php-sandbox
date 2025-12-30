@@ -1,8 +1,4 @@
 <?php
-// Full Project will be found here:
-// 
-
-
 //** Authentication:
 // Checking what is coming in request:
 $data = $request->getParsedBody();
@@ -135,3 +131,21 @@ class MessageService2
 // $serach = str_replace(['%', '-'], ['\%', '\_', $search])
 // Easy Way(use addcslashes- this basically use backslashes for given characters)
 // $query->where('c.name ILIKE :name')->setParameter('name', '%', addcslashes($search, '%_' . '%'));
+// To make user's session, we can make an authenticated middleware 
+// We can create auth interface user interface etc to abstract from the middleware to make code quality better 
+// For logout, just set the session unset and make user object null within the auth class.
+// We can implement session interface to start global session, validations and close.
+// Try always making interface rather than concrete class like Session implementation, in future different type Session implementation can come.
+
+// CSRF(Cross-Site Request Forgery) Attack:
+// CSRF is an attack that forces an end user to execute unwanted actions on a web application in which they're currently authenticated.
+// Like attacker send a lin via email or chat to trick the user into executing actions of attacker's choosing
+// For an Example- Bkash OTP
+// Most of the frameworks provide csrf token protection.
+
+// XSS (Coss Site Scripting)
+// a type of injection in which malicious scripts are injected
+// Maliscious code into the form..
+
+// Whe we import so many data, we should use batch size to make performance better
+// We can use clear method to prevent memory leak.
