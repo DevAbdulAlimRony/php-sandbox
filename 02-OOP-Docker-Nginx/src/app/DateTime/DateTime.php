@@ -40,4 +40,4 @@ foreach($period as $date){
     echo $date->format('d/m/Y'). PHP_EOL;
 }
 
-// Carbon Library: More Robust Solution on Date Time Object
+// Carbon Library: More Robust Solution on Date Time Object.

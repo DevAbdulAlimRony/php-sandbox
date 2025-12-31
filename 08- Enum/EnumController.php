@@ -8,9 +8,9 @@ class Status {
 // This is not a bad approach. Better than hard coding such values that dont really change and remain static.
 // Problem: Sometimes, We need to verify that argument or parameter passed must matched the constants of that all() returned to make validation. But it will take some codes.
 // There comes Enum to solve it.
-// constants have three major problems that enums solve elegantly:
+// constants have three major problems that enums solves elegantly:
 // 1. No Type Safety (Invalid values can pass silently, Hard to Validate):
-function setStatus(string $status) {}
+function setStatus($status) {}
 
 setStatus('apprroved'); // ❌ Typo — but PHP will accept it!
 setStatus('xyz');       // ❌ Completely invalid — accepted!
@@ -20,7 +20,7 @@ enum Status2 {
     case PENDING;
     case APPROVED;
 }
-setStatus(Status::PENDING); // ✔️ OK
+setStatus(Status2::PENDING); // ✔️ OK
 setStatus('pending');       // ❌ Error — strictly typed
 
 // 2. PHP does not know these constants belong together logically. An enum defines a closed set.
@@ -82,18 +82,20 @@ enum FarmerEnum2: int
             default => 'green'
         };
     }  // In view now: <td class="color-<?=FarmerEnum2::tryFrom($farmerObject)->color()....."
+    // from and tryFrom automatically provided by PHP itself for backed enums (enums with int or string values).
+    // from: Returns enum case if value exists
+    // tryFrom: Returns enum case if value exists, Returns null if value is invalid
 }
 
 // Accessing Backed Cases: $status = new FarmerEnum2(); $status->name (Output the cases like APPROVED), $status->value
 
-// Enum classes can implements interface and can use trait. But it cannot use inheritence.
+// Enum classes can implement interface and can use trait. But it cannot use inheritence.
 // If trait has a property, we cannot use that trait in a Enum class.
 
 // Not Allowed in Enum: Constructors and Deconstructors, Inheritence and Properties, Cloning, Magic Methods except __call, __callStatic, __invoke; Instantitaion directly or via reflection api
 // Allowed: Public Private or Protected Methods, Static Methods and Constants, Interfaces, Traits without Properties, Enum Class Attribute, Enum Case Attribute
 
-
 // $enum->name, value, cases (Provide all cases with values)
 // Check if the given enum exists: enum_exists()
 
-// Use Enum Classes with Reflection API: ReflectionEnum, ReflectionEnumUnitCase, ReflectionEnumBackedCase
+// Use Enum Classes with Reflection API: ReflectionEnum, ReflectionEnumUnitCase, ReflectionEnumBackedCase.

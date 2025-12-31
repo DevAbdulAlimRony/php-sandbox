@@ -59,7 +59,7 @@ class GeneratorController{
     //     $stmnt = $this->db->query('select id, ttle from posts');
     //     return $stmnt->fetchAll(); // problematic
 
-    //     // Soultion
+    // ** Soultion
     //     foreach($stmnt as $post){
     //         yield $ticket;
     //     }

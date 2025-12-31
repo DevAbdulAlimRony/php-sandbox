@@ -2,7 +2,7 @@
 // Let's say we are doing a shipping cost calculation
 // Let's say we have dimensions, weight, dim weight, bill weight
 // Billable weight is dimensional weight or actual weight which is higher.
-// See Other controllers for those implementation
+
 class BillableWeightCalculationService{
     public function calculate(int $width,
                              int $height, 
@@ -35,12 +35,12 @@ $billableWeight = (new BillableWeightCalculationService())->calculate(
 
 // But for each argument we need validation , for each argument we need unit also (maybe we are using inch now, it can be another metric in future)
 // So, those arguments along with validation and unit are not only scalar data anymore, it needs more additional information.
-// That's wher value object could be a better alternative rather than manually doing them in complex way.
+// That's where value object could be a better alternative rather than manually doing them in complex way.
 
 // Value object is a small object that represents a simple entity whose equality is not based on identity.
 // Two value objects are equal when they have same values, not necessarily being the same object.
 // Entity has id identity, value objects dont really have a specific identifier.
-// Thetype of object where the equality is based upon the property values, is value object
+// The type of object where the equality is based upon the property values, is value object
 // Value object ususally represnts quantifyable, measurable like amount, weight, address, phone number, age, dimension etc.
 
 // Now, same example with value object
@@ -67,7 +67,7 @@ class PackageDimension{
     public readonly int $height, public readonly int $length){
         // It should be valid, value object by default is invalid. So , we have to make validation.
         match(true){
-             $this->width <= 0 || $this->width > 80 => throw new \InvalidArgumentException('Invalid Package Width'),
+            $this->width <= 0 || $this->width > 80 => throw new \InvalidArgumentException('Invalid Package Width'),
             $this->height <= 0 || $this->height > 70 => throw new \InvalidArgumentException('Invalid Package Height'),
             $this->width <= 0 || $this->width > 120 => throw new \InvalidArgumentException('Invalid Package Length'),
             default => true,
@@ -100,3 +100,76 @@ class PackageDimension{
 // Laravel itself does not officially have Value Objects, but Laravel offers concepts that behave like VOs.
 // Custom Casts — Closest to Value Objects
 // DTOs + Value Objects work very well together.
+
+// Example of using DTO with VO
+
+// Money VO
+final class Money
+{
+    public function __construct(
+        public readonly int $amount,     
+        public readonly string $currency
+    ) {
+        if ($amount < 0) {
+            throw new \InvalidArgumentException('Money cannot be negative.');
+        }
+        if (!preg_match('/^[A-Z]{3}$/', $currency)) {
+            throw new \InvalidArgumentException('Invalid currency.');
+        }
+    }
+
+    public function add(Money $other): Money
+    {
+        $this->assertSameCurrency($other);
+        return new Money($this->amount + $other->amount, $this->currency);
+    }
+
+    public function multiply(int $qty): Money
+    {
+        if ($qty < 1) throw new \InvalidArgumentException('Qty must be >= 1.');
+        return new Money($this->amount * $qty, $this->currency);
+    }
+
+    private function assertSameCurrency(Money $other): void
+    {
+        if ($this->currency !== $other->currency) {
+            throw new \InvalidArgumentException('Currency mismatch.');
+        }
+    }
+}
+
+// Quantity VO
+final class Quantity
+{
+    public function __construct(public readonly int $value)
+    {
+        if ($value < 1) {
+            throw new \InvalidArgumentException('Quantity must be at least 1.');
+        }
+    }
+}
+
+// Now, Create DTOs that contain those VOs
+// OrderItemDTO (contains VOs)
+final class OrderItemDTO
+{
+    public function __construct(
+        public readonly int $productId,
+        public readonly Quantity $qty,
+    ) {}
+}
+
+// CheckoutOrderDTO (contains DTOs + scalar + optional fields)
+final class CheckoutOrderDTO
+{
+    /** @param OrderItemDTO[] $items */
+    public function __construct(
+        public readonly int $customerId,
+        public readonly string $currency,
+        public readonly array $items,
+        public readonly ?string $couponCode,
+        public readonly ?string $notes,
+    ) {}
+}
+
+

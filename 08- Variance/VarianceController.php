@@ -11,6 +11,8 @@
 // Liskob Substitution principle: An object and a sub-object or a class and a sub-class must be interchangeable without breaking the code.
 // PHP's those rules dont break this solid solid principle.
 
+// PHP supports variance mainly in method signatures (parameters & return types).
+
 abstract class Animal{
     protected string $name;
 

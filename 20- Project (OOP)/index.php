@@ -3,6 +3,7 @@
 // Checking what is coming in request:
 $data = $request->getParsedBody();
 var_dump($data);
+
 // Registering a User: Just save the data like name, email, password in databse normally using setter from model.
 // You can encrypt name, emails if you want to make user's security at extra level. t’s not automatically “best practice, just Extra layer of data confidentiality.
 // Some regulations and good-practice frameworks for privacy data recommend encryption of personally identifiable information (PII) when stored.
@@ -20,6 +21,7 @@ var_dump($data);
 // We should use slow hashing algorithm. 
 //  Use password_hash() function in PHP to hash password before saving in database, its uses bcrypt algorithm by default which is one of the strongest algorithms available.
 // Use password_verify() function to verify password during login.
+
 password_hash('user_password', PASSWORD_BCRYPT, ['cost' => 12]);
 // Default cost is 10, higher cost means more time to hash, more secure but more resource intensive, more cpu power slower generation harder to crack.
 // There is a php script in docs to check cost for your server. 
@@ -149,3 +151,35 @@ class MessageService2
 
 // Whe we import so many data, we should use batch size to make performance better
 // We can use clear method to prevent memory leak.
+
+// Caching in Redis:
+// Caching is when we store some data in a place from wheere you can get it super fast.
+// Like if we need any thing, rather than going any source material, we are finding it in the nearest place.
+// Our data in the database and we dont wanna fetch the data from database which is need to fetch over and over again.
+// This is where redis ir memecache come in. Both are them in memory key valye storage systems.
+// Redis stores data in memory which is faster to fetch rather than fetching from hard drive's database.
+// Redis can handle all kinds of data and can be used for messaging system, queues etc aso besid caching.
+
+// Step 1: Install Redis
+// Step 2: Need to connect with PHP Redis Extension. or, Native PHP library Like Predis.
+// Step 3: Implement proper Cache. There are two psrs related to psr- psr6 and psr16. psr16 is easy to use, psr6 complex but standard.
+// Step 6: Install package psr-simple-cache package.
+// Step 7: Now, Implement the RedisCache implements CacheInterface of psr. We will get get(), set(), delete(), clear(), getMultiple(), setMultiple(), deleteMultiple(), has() methods from that interface
+// Step 8: Add Redis configuration files like host, port, password
+// Step 8: Bind Interface in Container
+// Step 9: use RedisCache class to cache.
+// Laravel already provides the cache implementation, just use it.
+
+// Rate Limiting:
+// Rate Limiting is a technique for controlling the rate at which an application or API processes requests.
+// How often a user can make request to the server.
+// It prevents DDOs attacks.
+// Rate limit can be done only for those requests which are resource intensive or sensitive to abuse.
+// Ex- Complex database queries, login routes, password resets routes etc.
+// But at the same you should avoid bad UX, so that user can get frustrated.
+// We can create RateLimitMiddleware and use it.
+// Like we have request from an IP or proxy IP, we take it into cache, and then check same IP requests at a specific count. Message- Too many attemts if user try to login with wrong info 5 times.
+
+// Uploading files in s3 Bucket
+// We can use Digital Ocean s3 adapter
+

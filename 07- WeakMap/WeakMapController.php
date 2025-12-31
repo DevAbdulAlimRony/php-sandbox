@@ -21,10 +21,10 @@ $map[$invoice3] = ['a' => 1, 'b' => 2];
 var_dump(count($map)); // Output: 2
 unset($invoice3);
 var_dump($map); // Output: 1
-// Weakma Uses: Caching, Memorization, Prevent Memory Leaks
+// Weakmap Uses: Caching, Memorization, Prevent Memory Leaks
 
 // PHP Attributes
-// Attributes offer the ability to add structured, machine readable metadat information on declarations in code. 
+// Attributes offer the ability to add structured, machine readable metadata information on declarations in code. 
 // Classes, methods, functions, parameters, properties and class constants can be the target of an attribute.
 // PHP Attributes (introduced in PHP 8) are structured metadata that you can attach to: methods, properties, parameters, functions
 // They look like annotations but are native, parsed by PHP itself, not comments.

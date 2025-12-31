@@ -3,20 +3,20 @@
 // Receiving object is calling client, passed-in injectd object is called a service.
 // The code that passes the service to the client is called the injector
 
-// The Code belowis hard coded, Tight Coupling, Harder to Test, Harder to Maintain
+// The Code belows hard coded, Tight Coupling, Harder to Test, Harder to Maintain
 class BadInvoiceService{
     protected PaymentGatewayService $gatewayService;
     protected SalesTaxService $salesTaxService;
     protected EmailService $emailService;
 
     public function __construct(){
-        $this->gatewayService = new PaymentFatewayService();
+        $this->gatewayService = new PaymentGatewayService();
         //.....and others
     }
 }
 
 // This code below maintains dependency injection following standard of IOC (Inversion of Control)
-// Inversion of Control is a common phenomenon that you come across when extending frameworks. Indeed it's often seen as a defining characteristic of a framework.
+// Inversion of Control is a common phenomenon that you come across when extending frameworks. Indeed it's often seen as a defining characteristics of a framework.
 class GoodInvoiceService {
    public function __construct(
     protected SalesTaxService $salesTaxService,
@@ -25,14 +25,13 @@ class GoodInvoiceService {
    ){}
 }
 
-// Or We can Use Interface like SalesTaxInterface, PaymentGatewayInterface
+// Or, We can Use Interface like SalesTaxInterface, PaymentGatewayInterface.
 
-// But we injected that dependencies, it wont instantiate or resolved object majically like laravel, right?
+// But we injected that dependencies, it wont instantiate or resolved object magically like laravel, right?
 // So, we need dependency injection container here to pass that dependent object 
-// Dependency Injection Container is simply a class that has information of other classes which allow us to resolve the dependencies perfectly
+// Dependency Injection Container (DI Container) is simply a class that has information of other classes which allow us to resolve the dependencies perfectly
 // PSR-11 gave use standard rules and implementation to build a DI Container , Container Interfaces
 // We can use package or framewrok like PHP-DI, Laravel alreafy included DI Container as Service Container, so that we dont need to headache about container implementation.
-
 
 // Making a DI Container:
 // First install: composer require psr/container, Then take a Class called Container.php
