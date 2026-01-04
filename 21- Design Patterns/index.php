@@ -9,7 +9,45 @@
 // Types: Factory Method, Abstract Factory, Builder, Prototype, Singleton -->
 // **Factory Method:
 // Factory Method is a creational design pattern that provides an interface for creating objects in a superclass, but allows subclasses to alter the type of objects that will be created. 
-// Ex1: Application needs to send notifications, Desktop app send system notification, mobile app send push notification and so on. 
+// Ex1: Application needs to send notifications, Desktop app send system notification, mobile app send push notification, in app showing ui notification and so on. 
+// If you didn't use the Factory Method, your notify function would likely look like this:
+class oldNotification{
+    public function notify(string $type, string $message): void
+    {
+        // 1. Logic is hardcoded: Every time you add a new type (Slack, WhatsApp), 
+        // you MUST change this base class. This violates the Open/Closed Principle.
+        // The base class becomes dependent on every single concrete implementation.
+        // You can't easily swap notification behaviors at runtime based on the environment.
+        if ($type === 'desktop') {
+            $notification = new DesktopNotification();
+        } elseif ($type === 'mobile') {
+            $notification = new MobileNotification();
+        }
+    
+        $notification->send($message);
+    }
+}
+
+// Using Factory Method pattern:
+// Step1- Create a interface for Product
+interface Notification
+{
+    public function send(string $message): void;
+}
+
+// Step2- Create Concrete Product classes implementing the Product interface.
+class DesktopNotification implements Notification {
+    public function send(string $message): void {
+        echo "[Desktop] Showing system tray alert: $message\n";
+    }
+}
+class MobileNotification implements Notification {
+    public function send(string $message): void {
+        echo "[Mobile] Sending Push Notification via Firebase: $message\n";
+    }
+}
+
+// Step3- Create Creator abstract class with Factory Method that returns Product interface type.
 abstract class NotificationSender
 {
     // Factory Method (Must Return a interface's Object)
@@ -21,13 +59,8 @@ abstract class NotificationSender
         $notification->send($message);
     }
 }
-// Product Interface for the factory method implementation.
-interface Notification
-{
-    public function send(string $message): void;
-}
 
-// Concrete Creator Class
+// Step4- Create Concrete Creator classes that override the Factory Method to return Concrete Product instances.
 class DesktopNotificationSender extends NotificationSender
 {
     protected function createNotification(): Notification
@@ -42,59 +75,35 @@ class MobileNotificationSender extends NotificationSender
         return new MobileNotification();
     }
 }
+
+// --- CLIENT CODE ---
+function clientCode(NotificationSender $sender) {
+    $sender->notify("Hello! You have a new message.");
+}
+
+// The client doesn't need to know if it's mobile or desktop.
+echo "App running on Windows:\n";
+clientCode(new DesktopNotificationSender());
+
+echo "\nApp running on Android:\n";
+clientCode(new MobileNotificationSender());
+
 // Pros: Solve problem for single responsibility class and open and closed principle
 // Cons: So many subclasses.
-// Ex2: Search Engines
-interface SearchEngine {
-    public function search(string $value): string;
-}
 
-class GoogleEngine implements SearchEngine
-{
-    public function search(string $value): string
-    {
-        return "Google: $value";
-    }
-}
-
-class BingEngine implements SearchEngine
-{
-    public function search(string $value): string
-    {
-        return "Bing: $value";
-    }
-}
-
-abstract class Search {
-    abstract public function engine(): SearchEngine;
-
-    public function query(string $search): string
-    {
-        return $this->engine()->search($search);
-    }
-}
-
-class GoogleSearch extends Search
-{
-    public function engine(): SearchEngine
-    {
-        return new GoogleEngine();
-    }
-}
-
-class BingSearch extends Search
-{
-    public function engine(): SearchEngine
-    {
-        return new BingEngine();
-    }
-}
-
-$search = (new GoogleSearch())->query("Hello");
-printf($search);
-
-$search = (new BingSearch())->query("Hello");
-printf($search);
+// More Examples:
+// Logistics Systems: A transport application uses a factory to return a Truck object for land routes and a Ship object for sea routes.
+// Document Editors: A universal "New Document" command triggers a factory that returns a .docx object in a Word processor or a .sheet object in a spreadsheet app.
+// Database Connectors: A database manager provides a factory method that returns a MySQL connection, a PostgreSQL connection, or an Oracle connection based on the configuration.
+// Payment Processing: An e-commerce backend uses a factory to generate the correct payment gateway object, such as Stripe, PayPal, or ApplePay, based on user selection.
+// File Converters: A media application uses a factory to create the appropriate encoder object (e.g., MP4Encoder or AVIEncoder) depending on the desired output format.
+// Social Media Auth: A login handler uses a factory to produce different authentication providers like GoogleAuth, FacebookAuth, or GithubAuth.
+// Report Generators: A reporting tool employs a factory method to return a PDFReport, HTMLReport, or CSVReport generator based on the user's export choice.
+// Theme Management: A website engine uses a factory to create UI components that match either a DarkTheme or a LightTheme style.
+// Cloud Infrastructure: A cloud manager uses a factory method to provision resources, returning an AWSInstance, AzureVM, or GoogleCloudNode depending on the provider.
+// Logging Libraries: A logger interface defines a method to create an appender, allowing subclasses to output logs to a FileLog, ConsoleLog, or DatabaseLog.
+// Insurance Portals: A policy generator uses a factory to return specific policy types like LifeInsurance, AutoInsurance, or HomeInsurance based on the user's application
+// Health Trackers: A fitness app uses a factory to create activity trackers for different sports, such as a RunningTracker, CyclingTracker, or SwimmingTracker. etc.
 
 // **Abstract Factory:
 // Abstract Factory is a creational design pattern that lets you produce families of related objects without specifying their concrete classes.
@@ -178,5 +187,287 @@ function furnishRoom(FurnitureFactory $factory): void
 $furnitureFactory = new ModernFurnitureFactory();
 furnishRoom($furnitureFactory);
 
+// You need the Abstract Factory when your system needs to stay consistent across multiple types of products, and you want to ensure that products from "Family A" are never mixed with products from "Family B."
 
+
+// **Builder Pattern:
+// Builder is a creational design pattern that lets you construct complex objects step by step.
+// The pattern allows you to produce different types and representations of an object using the same construction code.
+// Imagine we have a House class which have many features. Maybe we can make subclasses but it will have so many subclasses. Or we can inject all objects into constructor, that will be complex also and not perfromant if the object is useless.
+// The Builder pattern suggests that you extract the object construction code out of its own class and move it to separate objects called builders.
+// The Builder doesn’t allow other objects to access the product while it’s being built.
+// Laravel's Query Builder is a real-world example of the Builder pattern.
+
+// If we create multiple constructors for each attribute, it will lead to a large number of constructor parameters. This is known as the telescoping constructor anti-pattern.
+/**
+ * ============================================================
+ * 1) THE PROBLEM (WITHOUT BUILDER)
+ * ============================================================
+ * When a class has MANY fields, a normal constructor becomes:
+ * - too long
+ * - hard to read (easy to mix parameter order)
+ * - hard to maintain (adding 1 new field changes every "new Product(...)" call)
+ * - hard to handle optional fields (you end up passing null/empty values)
+ */
+class Product
+{
+    public int $id;
+    public string $name;
+    public int $price;
+    public string $description;
+    public string $manufacturer;
+    public string $inventory;
+    public int $discount;
+
+    public function __construct(
+      int $id,
+      string $name,
+      int $price,
+      string $description,
+      string $manufacturer,
+      string $inventory,
+      int $discount
+    )
+    {
+        $this->id = $id;
+        $this->name = $name;
+        $this->price = $price;
+        $this->description = $description;
+        $this->manufacturer = $manufacturer;
+        $this->inventory = $inventory;
+        $this->discount = $discount;
+    }
+}
+$badProduct = new Product(
+    101,
+    'iPhone 13',
+    999.99,
+    'New iPhone 13 with A15 Bionic chip',
+    'Apple Inc.',
+    10,     // <-- should be inventory, but accidentally put discount
+    1000    // <-- should be discount, but accidentally put inventory
+);
+
+/**
+ * ============================================================
+ * 2) THE SOLUTION (WITH BUILDER)
+ * ============================================================
+ * Builder creates the object step-by-step, using clear method names.
+ * It solves:
+ * - readability (setName, setPrice...)
+ * - avoids parameter-order bugs
+ * - allows optional fields naturally (set only what you have)
+ * - easier maintenance: adding a new field usually changes only Builder + Product2
+ */
+class Product2
+{
+    // private properties (better encapsulation than public fields)
+    private $id;
+    private $name;
+    private $price;
+    private $description;
+    private $manufacturer;
+    private $inventory;
+    private $discount;
+
+     /**
+     * Product2 constructor accepts a builder.
+     * This forces object creation to go through ProductBuilder.
+     */
+    public function __construct(ProductBuilder $builder)
+    {
+        $this->id = $builder->getId();
+        $this->name = $builder->getName();
+        $this->price = $builder->getPrice();
+        $this->description = $builder->getDescription();
+        $this->manufacturer = $builder->getManufacturer();
+        $this->inventory = $builder->getInventory();
+        $this->discount = $builder->getDiscount();
+    }
+
+    // getters (read-only object)
+    public function getId(): int { return $this->id; }
+    public function getName(): string { return $this->name; }
+    public function getPrice(): float { return $this->price; }
+    public function getDescription(): string { return $this->description; }
+    public function getManufacturer(): string { return $this->manufacturer; }
+    public function getInventory(): int { return $this->inventory; }
+    public function getDiscount(): int { return $this->discount; }
+
+    // Example business method (optional): final price after discount
+    public function finalPrice(): float
+    {
+        $discountAmount = $this->price * ($this->discount / 100);
+        return $this->price - $discountAmount;
+    }
+}
+
+/**
+ * ProductBuilder
+ * - stores values step-by-step
+ * - can validate required fields
+ * - returns $this for fluent chaining
+ */
+class ProductBuilder
+{
+    private ?int $id = null;
+    private ?string $name = null;
+    private ?float $price = null;
+    private ?string $description = null;
+    private ?string $manufacturer = null;
+    private ?int $inventory = null;
+    private ?int $discount = null;
+
+    // Fluent setters (each returns $this)
+    public function setId(int $id): self
+    {
+        // you can validate here
+        if ($id <= 0) {
+            throw new InvalidArgumentException("Product id must be positive.");
+        }
+        $this->id = $id;
+        return $this;
+    }
+
+    public function setName(string $name): self
+    {
+        $name = trim($name);
+        if ($name === '') {
+            throw new InvalidArgumentException("Product name can't be empty.");
+        }
+        $this->name = $name;
+        return $this;
+    }
+
+    public function setPrice(float $price): self
+    {
+        if ($price < 0) {
+            throw new InvalidArgumentException("Price can't be negative.");
+        }
+        $this->price = $price;
+        return $this;
+    }
+
+    public function setDescription(string $description): self
+    {
+        $this->description = trim($description);
+        return $this;
+    }
+
+    public function setManufacturer(string $manufacturer): self
+    {
+        $manufacturer = trim($manufacturer);
+        if ($manufacturer === '') {
+            throw new InvalidArgumentException("Manufacturer can't be empty.");
+        }
+        $this->manufacturer = $manufacturer;
+        return $this;
+    }
+
+    public function setInventory(int $inventory): self
+    {
+        if ($inventory < 0) {
+            throw new InvalidArgumentException("Inventory can't be negative.");
+        }
+        $this->inventory = $inventory;
+        return $this;
+    }
+
+    public function setDiscount(int $discount): self
+    {
+        if ($discount < 0 || $discount > 100) {
+            throw new InvalidArgumentException("Discount must be 0..100.");
+        }
+        $this->discount = $discount;
+        return $this;
+    }
+
+    /**
+     * --------------------------
+     * Getters used by Product2
+     * --------------------------
+     * Here we also enforce "required fields" before building.
+     */
+    public function getId(): int
+    {
+        return $this->require($this->id, 'id');
+    }
+
+    public function getName(): string
+    {
+        return $this->require($this->name, 'name');
+    }
+
+    public function getPrice(): float
+    {
+        return $this->require($this->price, 'price');
+    }
+
+    public function getDescription(): string
+    {
+        // Optional example: if not set, default to empty
+        return $this->description ?? '';
+    }
+
+    public function getManufacturer(): string
+    {
+        return $this->require($this->manufacturer, 'manufacturer');
+    }
+
+    public function getInventory(): int
+    {
+        // Optional example: default 0 if not set
+        return $this->inventory ?? 0;
+    }
+
+    public function getDiscount(): int
+    {
+        // Optional example: default 0 if not set
+        return $this->discount ?? 0;
+    }
+
+    /**
+     * Build the final Product2 object.
+     * - validates required fields
+     * - returns a ready-to-use product
+     */
+    public function build(): Product2
+    {
+        // Ensure required fields exist BEFORE product creation
+        $this->getId();
+        $this->getName();
+        $this->getPrice();
+        $this->getManufacturer();
+
+        return new Product2($this);
+    }
+
+    /**
+     * Helper for required fields
+     */
+    private function require(mixed $value, string $fieldName): mixed
+    {
+        if ($value === null) {
+            throw new RuntimeException("Missing required field: {$fieldName}");
+        }
+        return $value;
+    }
+}
+$productBuilder = new ProductBuilder();
+$product = $productBuilder
+                ->setId(101)
+                ->setName('iPhone 13')
+                ->setPrice(999.99)
+                ->setDescription('New iPhone 13 with A15 Bionic chip')
+                ->setManufacturer('Apple Inc.')
+                ->setInventory(1000)
+                ->setDiscount(10)
+                ->build();
+echo "Product created: {$product->getName()} with final price: {$product->finalPrice()}\n";
+
+// More Examples:
+// Query Builders: Constructing a complex SQL query with multiple WHERE, JOIN, and ORDER BY clauses step-by-step.
+// Meal Ordering System: Creating a "Burger" object where a user can optionally add extra cheese, remove onions, or choose a specific patty type.
+// Report Generators: Creating an Excel report where you define columns, add filters, and apply styling before finally "exporting" it.
+// Character Creators (Games): Building a player character by selecting hair style, armor type, weapon, and skill points.
 
