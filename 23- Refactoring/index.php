@@ -74,6 +74,39 @@
 // Ex: You use a Money object from a third part library which has amount, current but you need addTax(), return() etc. You can't modify the original money class.
 // You create a local wrapper / subclass. class ExtendedMoney extends Money{} and use ExtendedMoney everywhere rather than Money.
 
+//** 1. Organizing Data: */
+//* 1. Self Encapsulate Field: You use direct access to private fields inside a class, use getter and setter.
+// You can perform complex operations when data in the field is set or received.
+// Lazy initialization and validation of field values are easily implemented inside field getters and setters.
+// We can redefine getters and setters in subclasses.
+
+//* 2. Replace Data Value with Object: A field contains multiple data items.
+// A class (or group of classes) contains a data field. The field has its own behavior and associated data.
+// Create a new class, place the old field and its behavior in the class with self encapsuate field making getters, and store the object of the class in the original class.
+
+//* 3. Change Value to Reference: 
+// You have many identical instances of a single class that you need to replace with a single object.
+// Convert the identical objects to a single reference object.
+// Use  Replace Constructor with Factory Method on the class from which the references are to be generated.
+// Laravel Exmp: We are accessing a order's shipping address- $order->user->address;
+// What if User updates address later, Old orders now show wrong delivery address.
+// Correct way orders should store address for each order. Maybe from addresses table as reference.
+
+//* 3. Change Reference to Value: Opposite of Change Value to Reference.
+// You have a reference object that’s too small and infrequently changed to justify managing its life cycle.
+// Turn it into a value object.
+
+//* 4. Replace Array with Object: You have an array that contains various types of data.
+// Replace the array with an object of a class that will have separate fields for each element.
+
+//* 5. You have two classes that each need to use the features of the other, but the association between them is only unidirectional.
+// Add the missing association to the class that needs it.
+
+//* 6. Change Bidirectional Association to Unidirectional
+// You have a bidirectional association between classes, but one of the classes doesn’t use the other’s features.
+// Remove the unused association.
+// Don't need hasMany relationship in laravel, never used- just remove it.
+
 //** 10. Code Smells: */
 //* 1. Long Method Bloater: any method longer than ten lines should make you start asking questions.
 // something is always being added to a method but nothing is ever taken out, that's bad.
