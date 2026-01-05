@@ -471,3 +471,169 @@ echo "Product created: {$product->getName()} with final price: {$product->finalP
 // Report Generators: Creating an Excel report where you define columns, add filters, and apply styling before finally "exporting" it.
 // Character Creators (Games): Building a player character by selecting hair style, armor type, weapon, and skill points.
 
+
+// **Prototype Pattern:
+// Prototype is a creational design pattern that lets you copy existing objects without making your code dependent
+// Say you have an object, and you want to create an exact copy of it. How would you do it? First, you have to create a new object of the same class. Then you have to go through all the fields of the original object and copy their values over to the new object.
+// Copying an object “from the outside” isn’t always possible. Sometimes, the class of the object may not even be known beforehand. Even if you do know the class, it may not expose all the data you need to copy.
+// There’s one more problem with the direct approach. Since you have to know the object’s class to create a duplicate, your code becomes dependent on that class. 
+// The Prototype pattern suggests that you clone objects via a special method defined in the object’s class. The pattern declares a common interface for all objects that support cloning.
+// Usually, such an interface contains just a single clone method.
+// An object that supports cloning is called a prototype.
+// When your objects have dozens of fields and hundreds of possible configurations, cloning them might serve as an alternative to subclassing.
+// Real life Example: Enemy Spawning in Game Development, Copy Paste Functionality in Graphics Editor, Database Configuration Cache.  
+// Ex- How to clone a complex Page object using the Prototype pattern. The Page class has lots of private fields, which will be carried over to the cloned object thanks to the Prototype pattern.
+class Page
+{
+    private $title;
+
+    private $body;
+
+    private $author;
+
+    private $comments = [];
+
+    /**
+     * @var \DateTime
+     */
+    private $date;
+
+    // +100 private fields.
+
+    public function __construct(string $title, string $body, Author $author)
+    {
+        $this->title = $title;
+        $this->body = $body;
+        $this->author = $author;
+        $this->author->addToPage($this);
+        $this->date = new \DateTime();
+    }
+
+    public function addComment(string $comment): void
+    {
+        $this->comments[] = $comment;
+    }
+
+    /**
+     * You can control what data you want to carry over to the cloned object.
+     *
+     * For instance, when a page is cloned:
+     * - It gets a new "Copy of ..." title.
+     * - The author of the page remains the same. Therefore we leave the
+     * reference to the existing object while adding the cloned page to the list
+     * of the author's pages.
+     * - We don't carry over the comments from the old page.
+     * - We also attach a new date object to the page.
+     */
+    public function __clone()
+    {
+        $this->title = "Copy of " . $this->title;
+        $this->author->addToPage($this);
+        $this->comments = [];
+        $this->date = new \DateTime();
+    }
+}
+
+class Author
+{
+    private $name;
+
+    /**
+     * @var Page[]
+     */
+    private $pages = [];
+
+    public function __construct(string $name)
+    {
+        $this->name = $name;
+    }
+
+    public function addToPage(Page $page): void
+    {
+        $this->pages[] = $page;
+    }
+}
+
+function clientCode2()
+{
+    $author = new Author("John Smith");
+    $page   = new Page("Tip of the day", "Keep calm and carry on.", $author);
+
+    // ...
+
+    $page->addComment("Nice tip, thanks!");
+
+    // ...
+
+    $draft = clone $page;
+    echo "Dump of the clone. Note that the author is now referencing two objects.\n\n";
+    print_r($draft);
+}
+
+// Laravel uses prototype design pattern for model. If you need 30 model, laravel have just one instance and its replicate() method.
+// Laravel’s Service Container (the heart of the framework) uses a variation of the Prototype pattern when handling Singletons.
+
+// **Singleton Pattern:
+// Singleton is a creational design pattern that lets you ensure that a class has only one instance.
+// It ensures a class has just a single instance, Imagine that you created an object, but after a while decided to create a new one. Instead of receiving a fresh object, you’ll get the one you already created.
+// This behavior is impossible to implement with a regular constructor since a constructor call must always return a new object by design.
+// Steps: Make the default constructor private, to prevent other objects from using the new operator with the Singleton class, Create a static creation method that acts as a constructor. Under the hood, this method calls the private constructor to create an object and saves.
+// Disadvantages: Violates the single responsibility principle because it solves two problems at a time, it can mask bad design, difficult to unit test.
+// Real life Example:  Database Connection Pool, Logging Service- provide a global logging object, Configuration Manager- shared runtime configuration object etc.
+class Logger
+{
+    // Hold the single instance of the class
+    private static $instance = null;
+    private $logFile;
+
+    // 1. PRIVATE CONSTRUCTOR: Prevents 'new Logger()' from outside
+    private function __construct()
+    {
+        $this->logFile = "app_log.txt";
+        echo "--- File '{$this->logFile}' opened for writing. ---\n";
+    }
+
+    // 2. THE GATEKEEPER: Static method to get the instance
+    public static function getInstance()
+    {
+        if (self::$instance == null) {
+            // Only create it if it doesn't exist yet
+            self::$instance = new Logger();
+        }
+        return self::$instance;
+    }
+
+    // 3. Prevent Cloning (Singleton must be unique)
+    private function __clone() {}
+
+    public function log(string $message)
+    {
+        echo "Writing to log: $message\n";
+        // file_put_contents($this->logFile, $message, FILE_APPEND);
+    }
+}
+
+// --- Client Code ---
+
+// $log = new Logger(); // ERROR: Call to private constructor
+
+$logger1 = Logger::getInstance();
+$logger1->log("User 'Admin' logged in.");
+
+$logger2 = Logger::getInstance();
+$logger2->log("Database query executed.");
+
+// Proof that they are the same instance
+if ($logger1 === $logger2) {
+    echo "\nSUCCESS: Both loggers are the EXACT same instance in memory.";
+}
+
+// Laravel uses this pattern for:
+// When your website loads, Laravel creates one single instance of the Illuminate\Foundation\Application class. $app, service container etc.
+
+// Imagine you are checking the logged-in user in your navigation bar, then again in a sidebar, and finally in a controller to check permissions.
+// The Problem without Singleton: Each check would require a new "Auth" object, potentially re-querying the database or re-parsing the session data three different times.
+// The Singleton Solution: Laravel binds the Auth manager as a singleton. $user = auth()->user(); // First call creates the Auth instance
+// @if(Auth::check()) // Second call returns the SAME Auth instance.
+// aravel prefers the Container over "Static" Singletons for testability and 
+// Decoupling- our code doesn't need to know it's a Singleton. It just asks for a class, and Laravel decides whether to provide a new one or a shared one.
