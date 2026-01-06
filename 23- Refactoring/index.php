@@ -98,14 +98,205 @@
 
 //* 4. Replace Array with Object: You have an array that contains various types of data.
 // Replace the array with an object of a class that will have separate fields for each element.
+$transaction = ['deposit', 5000, '2025-01-01'];
 
-//* 5. You have two classes that each need to use the features of the other, but the association between them is only unidirectional.
+if ($transaction[0] === 'deposit') {
+    $balance += $transaction[1];
+}
+// Solution:
+class Transaction
+{
+    public function __construct(
+        private string $type,
+        private float $amount,
+        private DateTime $date
+    ) {
+        if ($amount <= 0) {
+            throw new Exception('Invalid amount');
+        }
+    }
+
+    public function apply(float $balance): float
+    {
+        return $this->type === 'deposit'
+            ? $balance + $this->amount
+            : $balance - $this->amount;
+    }
+}
+$transaction = new Transaction('deposit', 5000, new DateTime());
+$balance = $transaction->apply($balance);
+
+//* 5. Change Unidirectional to Bidirectional Association: You have two classes that each need to use the features of the other, but the association between them is only unidirectional.
 // Add the missing association to the class that needs it.
 
 //* 6. Change Bidirectional Association to Unidirectional
 // You have a bidirectional association between classes, but one of the classes doesn’t use the other’s features.
 // Remove the unused association.
 // Don't need hasMany relationship in laravel, never used- just remove it.
+
+//* 7. Replace Magic Number with Symbolic Constant
+// $mass * $height * 9.81, make it: define("GRAVITATIONAL_CONSTANT", 9.81); $mass * $height * GRAVITATIONAL_CONSTANT;
+
+//* 8. Encapsulate Field: Make a field private and create getter and setter methods to access it.
+// If there is any logic to be added when getting or setting the field, it can be done in these methods.
+// You can also perform complicated operations related to access to object fields.
+// public array $items = []; - Anyone can delete everything, No Validation
+class BankAccount
+{
+    public float $balance = 0;
+}
+
+$account = new BankAccount();
+$account->balance = -5000;   // ❌ illegal but allowed
+
+class BankAccount2
+{
+    private float $balance = 0;
+
+    public function getBalance(): float
+    {
+        return $this->balance;
+    }
+
+    public function setBalance(float $amount): void
+    {
+        if ($amount < 0) {
+            throw new Exception('Balance cannot be negative');
+        }
+
+        $this->balance = $amount;
+    }
+}
+
+$account2 = new BankAccount2();
+$account2->setBalance(1000);     // ✅ valid
+echo $account2->getBalance();    // 1000
+$account2->setBalance(-500);     // ❌ exception
+
+//* 9. Encapsulate Collection: A class contains a collection field and a simple getter and setter for working with the collection.
+// Make the getter-returned value read-only and create methods for adding/deleting elements of the collection.
+class Cart
+{
+    private array $items = [];
+
+    // READ-ONLY access
+    public function getItems(): array
+    {
+        return array_values($this->items); // copy
+    }
+
+    // Controlled add
+    public function addItem(string $item): void
+    {
+        if (in_array($item, $this->items)) {
+            throw new Exception("Item already in cart");
+        }
+
+        $this->items[] = $item;
+    }
+
+    // Controlled remove
+    public function removeItem(string $item): void
+    {
+        $key = array_search($item, $this->items);
+
+        if ($key === false) {
+            throw new Exception("Item not found");
+        }
+
+        unset($this->items[$key]);
+    }
+}
+
+//* 10. Replace Type Code with Class or subclass or state/strategy.
+// Type code occurs when, instead of a separate data type, you have a set of numbers or strings that form a list of allowable values for some entity.
+// Create a new class and use its objects instead of the type code values.
+class Payment
+{
+    public string $type;
+
+    public function calculateFee(float $amount): float
+    {
+        if ($this->type === 'cash') {
+            return 0;
+        } elseif ($this->type === 'card') {
+            return $amount * 0.02;
+        } elseif ($this->type === 'bkash') {
+            return $amount * 0.015;
+        }
+
+        throw new Exception('Invalid payment type');
+    }
+} // Rather Than doing it:
+
+abstract class Payment2
+{
+    abstract public function calculateFee(float $amount): float;
+}
+class CashPayment extends Payment2
+{
+    public function calculateFee(float $amount): float
+    {
+        return 0;
+    }
+}
+class CardPayment extends Payment2
+{
+    public function calculateFee(float $amount): float
+    {
+        return $amount * 0.02;
+    }
+}
+class BkashPayment extends Payment2
+{
+    public function calculateFee(float $amount): float
+    {
+        return $amount * 0.015;
+    }
+}
+$payment = new CardPayment();
+$fee = $payment->calculateFee(1000);
+
+//* 10. Replace Subclass with Fields.
+// You have subclasses differing only in their (constant-returning) methods.
+// Replace the methods with fields in the parent class and delete the subclasses.
+abstract class Employee
+{
+    abstract public function getType(): string;
+    abstract public function getSalaryMultiplier(): float;
+}
+class Manager extends Employee
+{
+    public function getType(): string
+    {
+        return 'manager';
+    }
+
+    public function getSalaryMultiplier(): float
+    {
+        return 2.0;
+    }
+}
+class Employee2
+{
+    public function __construct(
+        private string $type,
+        private float $salaryMultiplier
+    ) {}
+
+    public function getType(): string
+    {
+        return $this->type;
+    }
+
+    public function getSalaryMultiplier(): float
+    {
+        return $this->salaryMultiplier;
+    }
+}
+
+//** 10. Simplifying Conditional Expressions: */
+//* 10. Decompose Conditional
 
 //** 10. Code Smells: */
 //* 1. Long Method Bloater: any method longer than ten lines should make you start asking questions.
