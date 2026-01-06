@@ -637,3 +637,126 @@ if ($logger1 === $logger2) {
 // @if(Auth::check()) // Second call returns the SAME Auth instance.
 // aravel prefers the Container over "Static" Singletons for testability and 
 // Decoupling- our code doesn't need to know it's a Singleton. It just asks for a class, and Laravel decides whether to provide a new one or a shared one.
+
+// **Structural Design Patterns:
+// Structural design patterns explain how to assemble objects and classes into larger structures, while keeping these structures flexible and efficient.
+// **Adapter/Wrapper Pattern: Adapter is a structural design pattern that allows objects with incompatible interfaces to collaborate.
+// Let's say one object returning data into xml format, but in future I need json also.
+// Create Adapter, An adapter a special object that converts the interface of one object so that another object can understand it.
+// Adapters can not only convert data into various formats but can also help objects with different interfaces collaborate.
+// Sometimes it’s even possible to create a two-way adapter that can convert the calls in both directions.
+// Objecct Adapter: This implementation uses the object composition principle: the adapter implements the interface of one object and wraps the other one. 
+// Class Adapter: This implementation uses inheritance: the adapter inherits interfaces from both objects at the same time. 
+// Use the Adapter class when you want to use some existing class, but its interface isn’t compatible with the rest of your code.
+// The Adapter pattern lets you create a middle-layer class that serves as a translator between your code and a legacy class, a 3rd-party class or any other class with a weird interface.
+// Examples:
+// Media Players: An app expects an AudioPlayer interface, but you need to integrate a library that only plays .vlc or .mp4 files using different method names.
+// Data Serialization: Your UI expects data in JSON format, but an old legacy API returns XML. The adapter converts the XML response into a JSON object.
+// Logging Frameworks: Your application uses a standard Logger interface, but you want to use a specific third-party tool like Log4j or Serilog which has different method signatures (e.g., log_message() vs write_to_stream()).
+// Database Drivers: Most ORMs (Object Relational Mappers) use adapters to talk to different databases (MySQL, PostgreSQL, Oracle) using the same set of commands.
+// Laravel uses for filesystem- Laravel’s Storage facade provides a unified interface (e.g., put(), get(), exists()) regardless of whether you are saving files to your Local disk, Amazon S3, or SFTP.
+// When you send an email in Laravel using Mail::send(), the framework doesn't care if you're using SMTP, Mailgun, Postmark, or Amazon SES.
+// In PHP, the Object-Based Adapter is the industry standard. This is because PHP does not support multiple inheritance, making the Class-Based Adapter (which requires inheriting from two classes at once) impossible for two concrete classes.
+// Example: You have existing code that expects one interface (your app’s NotifierInterface), but you want to use third-party services (Twilio, Firebase, Mailgun, etc.) that each have different method names + payload formats.
+// Without Adapter → your code becomes full of if/else / switch on provider type, and every time you add a new provider you must edit many places.
+// Your app wants to call $notifier->send($to, $message);, but now for different twillo: messages->create($to, ['body' => $text]), firebase: sendToToken($token, $payload) etc.
+// Adapter lets you keep one common interface in the app, plug in any provider via a small translator or adapter class, add new providers without changing the main business code.
+/**
+ * Target interface: your application code only knows this.
+ * It doesn't care which vendor (Twilio/Firebase/etc.) is used.
+ */
+interface NotifierInterface
+{
+    public function send(string $to, string $message): void;
+}
+/**
+ * 3rd-party SMS SDK (example).
+ * Notice: it doesn't match NotifierInterface at all.
+ */
+class TwilioSmsClient
+{
+    public function sendSms(string $phone, array $data): void
+    {
+        // Imagine: actual Twilio SDK call here
+        // $this->client->messages->create($phone, ['body' => $data['body']]);
+        echo "Twilio SMS to {$phone}: {$data['body']}\n";
+    }
+}
+/**
+ * 3rd-party Push SDK (example).
+ * Different method name + payload format.
+ */
+class FirebasePushClient
+{
+    public function sendToToken(string $token, array $payload): void
+    {
+        // Imagine: actual Firebase call here
+        echo "Firebase Push to {$token}: {$payload['title']} - {$payload['body']}\n";
+    }
+}
+/**
+ * Adapter for Twilio.
+ * Converts send($to,$message) into Twilio's sendSms($phone,$data).
+ */
+class TwilioSmsNotifierAdapter implements NotifierInterface
+{
+    public function __construct(private TwilioSmsClient $twilio) {}
+
+    public function send(string $to, string $message): void
+    {
+        // Translate to Twilio's expected payload format
+        $this->twilio->sendSms($to, ['body' => $message]);
+    }
+}
+
+/**
+ * Adapter for Firebase.
+ * Converts send($to,$message) into Firebase's sendToToken($token,$payload).
+ */
+class FirebasePushNotifierAdapter implements NotifierInterface
+{
+    public function __construct(private FirebasePushClient $firebase) {}
+
+    public function send(string $to, string $message): void
+    {
+        // Translate to Firebase's expected payload format
+        $payload = [
+            'title' => 'Notification',
+            'body'  => $message,
+        ];
+
+        $this->firebase->sendToToken($to, $payload);
+    }
+}
+
+/**
+ * Your application service.
+ * This code never changes when you add a new provider.
+ */
+class OrderService
+{
+    public function __construct(private NotifierInterface $notifier) {}
+
+    public function placeOrder(string $userContact): void
+    {
+        // ... order logic ...
+        $this->notifier->send($userContact, "Your order has been placed successfully!");
+    }
+}
+
+// Use SMS (Twilio)
+$twilio = new TwilioSmsClient();
+$smsNotifier = new TwilioSmsNotifierAdapter($twilio);
+
+$orderService = new OrderService($smsNotifier);
+$orderService->placeOrder('+8801712345678');
+
+// Switch to Push (Firebase) without changing OrderService
+$firebase = new FirebasePushClient();
+$pushNotifier = new FirebasePushNotifierAdapter($firebase);
+
+$orderService2 = new OrderService($pushNotifier);
+$orderService2->placeOrder('firebase_device_token_abc');
+
+
+
