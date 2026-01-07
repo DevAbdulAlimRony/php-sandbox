@@ -759,4 +759,148 @@ $orderService2 = new OrderService($pushNotifier);
 $orderService2->placeOrder('firebase_device_token_abc');
 
 
+// **Bridge Pattern: Bridge is a structural design pattern that lets you split a large class or a set of closely related classes into two separate hierarchies—abstraction and implementation—which can be developed independently of each other.
+// Examples: You have shape classes (Circle, Square, etc.) and you have different color methods (Red, Blue, Green).
+// or, You have to send error log in Slackand Whatsapp, You have to send Info Log and Error Type Log.
+// Instead of creating subclasses for each combination (RedCircle, BlueCircle, RedSquare, BlueSquare, etc.), you can use the Bridge pattern to separate the shape hierarchy from the color hierarchy.
+// This way, you can mix and match shapes and colors without creating a new subclass for each
+// Imagine you want to post messages to different platforms (Facebook, Twitter) using different styles of posts (Simple Post, Scheduled Post).
+interface SocialNetworkImplementation {
+    public function login();
+    public function sendPost($message);
+    public function logout();
+}
+class FacebookApi implements SocialNetworkImplementation {
+    public function login() { echo "Logged into Facebook.\n"; }
+    public function sendPost($message) { echo "Facebook: Posting -> $message\n"; }
+    public function logout() { echo "Logged out of Facebook.\n"; }
+}
 
+class TwitterApi implements SocialNetworkImplementation {
+    public function login() { echo "Logged into Twitter.\n"; }
+    public function sendPost($message) { echo "Twitter: Tweeting -> $message\n"; }
+    public function logout() { echo "Logged out of Twitter.\n"; }
+}
+// This is the "high-level" control layer that holds a reference to the implementation.
+abstract class PostContent {
+    protected $platform;
+
+    public function __construct(SocialNetworkImplementation $platform) {
+        $this->platform = $platform;
+    }
+
+    abstract public function post($message);
+}
+class SimplePost extends PostContent {
+    public function post($message) {
+        $this->platform->login();
+        $this->platform->sendPost($message);
+        $this->platform->logout();
+    }
+}
+
+class UrgentPost extends PostContent {
+    public function post($message) {
+        $this->platform->login();
+        $this->platform->sendPost("URGENT: " . $message);
+        $this->platform->logout();
+    }
+}
+// Post a simple message to Facebook
+$facebookPost = new SimplePost(new FacebookApi());
+$facebookPost->post("Hello World!");
+
+echo "---\n";
+
+// Post an urgent message to Twitter
+$twitterPost = new UrgentPost(new TwitterApi());
+$twitterPost->post("The server is down!");
+// The Bridge pattern is best when you have two independent dimensions of growth.
+
+// Example2: Imagine you have different Checkout Types (Standard, Subscription, One-Click) and different Payment Gateways (Stripe, PayPal, Razorpay).
+// Combining bridge and factory pattern:
+interface PaymentGateway {
+    public function authenticate();
+    public function executePayment($amount);
+}
+
+class StripeGateway implements PaymentGateway {
+    public function authenticate() { return "Stripe API Key Validated."; }
+    public function executePayment($amount) { return "Stripe: Charged $$amount"; }
+}
+
+class PayPalGateway implements PaymentGateway {
+    public function authenticate() { return "PayPal OAuth Token Validated."; }
+    public function executePayment($amount) { return "PayPal: Charged $$amount"; }
+}
+abstract class CheckoutProcess {
+    protected $gateway;
+
+    public function __construct(PaymentGateway $gateway) {
+        $this->gateway = $gateway;
+    }
+
+    abstract public function finalize($amount);
+}
+class StandardCheckout extends CheckoutProcess {
+    public function finalize($amount) {
+        echo $this->gateway->authenticate() . "\n";
+        echo "Processing standard checkout...\n";
+        echo $this->gateway->executePayment($amount) . "\n";
+    }
+}
+
+class SubscriptionCheckout extends CheckoutProcess {
+    public function finalize($amount) {
+        echo $this->gateway->authenticate() . "\n";
+        echo "Setting up recurring billing for $$amount...\n";
+        echo $this->gateway->executePayment($amount) . "\n";
+        echo "Subscription record created in database.\n";
+    }
+}
+class PaymentGatewayFactory {
+    public static function make(string $type): PaymentGateway {
+        return match($type) {
+            'stripe' => new StripeGateway(),
+            'paypal' => new PayPalGateway(),
+            default => throw new Exception("Gateway not supported"),
+        };
+    }
+}
+class CheckoutFactory {
+    public static function make(string $type, PaymentGateway $gateway): CheckoutProcess {
+        return match($type) {
+            'standard'     => new StandardCheckout($gateway),
+            'subscription' => new SubscriptionCheckout($gateway),
+            default        => throw new Exception("Checkout type [$type] unknown."),
+        };
+    }
+}
+class PaymentService {
+    public function handle(string $method, string $type, float $amount) {
+        // 1. Resolve the implementation (Gateway)
+        $gateway = PaymentGatewayFactory::make($method);
+
+        // 2. Resolve the abstraction (Checkout Type) and Bridge it
+        $checkout = CheckoutFactory::make($type, $gateway);
+
+        // 3. Execute
+        return $checkout->finalize($amount);
+    }
+}
+class PaymentController extends Controller {
+    public function __construct(protected PaymentService $paymentService) {}
+
+    public function store(Request $request) {
+        // High-level intent only
+        $this->paymentService->handle(
+            $request->payment_method, // e.g., 'stripe'
+            $request->checkout_type,   // e.g., 'subscription'
+            $request->amount
+        );
+
+        // return response()->json(['message' => 'Payment processed successfully']);
+    }
+}
+// Now, subscription can be monthly or yearly or lifetime etc.
+// So, we can make new bridges.
