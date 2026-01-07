@@ -74,7 +74,7 @@
 // Ex: You use a Money object from a third part library which has amount, current but you need addTax(), return() etc. You can't modify the original money class.
 // You create a local wrapper / subclass. class ExtendedMoney extends Money{} and use ExtendedMoney everywhere rather than Money.
 
-//** 1. Organizing Data: */
+//** 2. Organizing Data: */
 //* 1. Self Encapsulate Field: You use direct access to private fields inside a class, use getter and setter.
 // You can perform complex operations when data in the field is set or received.
 // Lazy initialization and validation of field values are easily implemented inside field getters and setters.
@@ -295,14 +295,81 @@ class Employee2
     }
 }
 
-//** 10. Simplifying Conditional Expressions: */
-//* 10. Decompose Conditional
+//** 3. Simplifying Conditional Expressions: */
+//* 10. Decompose Conditional: You have a complex conditional (if-then/else or switch), decompose.
+// if ($date->before(SUMMER_START) || $date->after(SUMMER_END)), make it a method and call- if (isSummer($date)).
 
 //** 10. Code Smells: */
 //* 1. Long Method Bloater: any method longer than ten lines should make you start asking questions.
 // something is always being added to a method but nothing is ever taken out, that's bad.
 // Tratment: Extract Method, if you feel the need to comment on something inside a method, you should take this code and put it in a new method.
 // Even a single line can and should be split off into a separate method, if it requires explanations. 
+
+//* 2. Consolidate Conditional Expression: You have multiple conditionals that lead to the same result or action.
+// Consolidate all these conditionals in a single expression.
+
+//* 3. Consolidate Duplicate Conditional Fragments: Identical code can be found in all branches of a conditional.
+// Move the code outside of the conditional.
+if ($a > 3) {
+  $total = $price * 0.95;
+  return 10;
+} else {
+  $total = $price * 0.98;
+  return 10;
+}
+
+// Solution:
+if ($a > 3) {
+  $total = $price * 0.95;
+} else {
+  $total = $price * 0.98;
+}
+return 10;
+
+//* 4. Remove Control Flag: You have a boolean variable that acts as a control flag for multiple boolean expressions.
+// Instead of the variable, use break, continue and return.
+
+//* 5. Replace Nested Conditional with Guard Clauses
+// You have a group of nested conditionals and it’s hard to determine the normal flow of code execution.
+// Isolate all special checks and edge cases into separate clauses and place them before the main checks.
+//  Ideally, you should have a “flat” list of conditionals, one after the other.
+// Rather than else then inside it if else, just use flat if conditional with return value.
+
+//* 6. Replace Conditional with Polymorphism
+// You have a conditional that performs various actions depending on object type or properties.
+// Create subclasses matching the branches of the conditional. In them, create a shared method and move code from the corresponding branch of the conditional to it. 
+
+//* 7. Introduce Null Object: Instead of null, return a null object that exhibits the default behavior.
+// $customer = ($order->customer !== null) ? $order->customer : new NullCustomer;
+// Why Need- Dozens of checks for null make your code longer and uglier.
+
+//* 7. Introduce Assertion: For a portion of code to work correctly, certain conditions or values must be true.
+// Replace these assumptions with specific assertion checks.
+function transferOld(User $from, User $to, float $amount)
+{
+    // Assumption: $amount is always > 0
+    // Assumption: sender always has balance
+
+    $from->balance -= $amount;
+    $to->balance += $amount;
+
+    $from->save();
+    $to->save();
+}
+function transferNew(User $from, User $to, float $amount)
+{
+    assert($amount > 0, 'Transfer amount must be positive');
+    assert($from->balance >= $amount, 'Insufficient balance');
+
+    $from->balance -= $amount;
+    $to->balance += $amount;
+
+    $from->save();
+    $to->save();
+}
+// Now, Invalid input is caught immediately, Error message explains what went wrong.
+
+
 
 //* 1. Large Class Bloater: A class contains many fields/methods/lines of code.
 // Treatment: Extract class, Extract Sub class, Extract Interface.
