@@ -296,14 +296,8 @@ class Employee2
 }
 
 //** 3. Simplifying Conditional Expressions: */
-//* 10. Decompose Conditional: You have a complex conditional (if-then/else or switch), decompose.
+//* 1. Decompose Conditional: You have a complex conditional (if-then/else or switch), decompose.
 // if ($date->before(SUMMER_START) || $date->after(SUMMER_END)), make it a method and call- if (isSummer($date)).
-
-//** 10. Code Smells: */
-//* 1. Long Method Bloater: any method longer than ten lines should make you start asking questions.
-// something is always being added to a method but nothing is ever taken out, that's bad.
-// Tratment: Extract Method, if you feel the need to comment on something inside a method, you should take this code and put it in a new method.
-// Even a single line can and should be split off into a separate method, if it requires explanations. 
 
 //* 2. Consolidate Conditional Expression: You have multiple conditionals that lead to the same result or action.
 // Consolidate all these conditionals in a single expression.
@@ -369,7 +363,205 @@ function transferNew(User $from, User $to, float $amount)
 }
 // Now, Invalid input is caught immediately, Error message explains what went wrong.
 
+//** 4. Simplifying Method Calls: */
+//* 1. Rename Method: The method name should explain what the method does, doesnt matter how long the name takes.
+
+//* 2. Add Parameter: A method doesn’t have enough data to perform certain actions.
+// Create a new parameter to pass the necessary data.
+
+//* 3. Remove Parameter: A parameter isn’t used in the body of a method.
+// Remove the unused parameter.
+
+//* 4. Separate Query from Modifier: If method return a value and also changes something inside an object.
+// Split the method into two separate methods.
+// Split getTotalOutstandingAndSetReadyForSummaries() into getTotalOutstanding() and setReadyForSummaries().
+
+//* 5. Parameterize Method: Multiple methods perform similar actions.
+// Combine these methods by using a parameter that will pass the necessary special value.
+// fivePercentRise() tenPercentRise() - make it: rise(percentage)
+
+//* 5. Replace Parameter with Explicit Methods: A method is split into parts, each of which is run depending on the value of a parameter.
+// Extract the individual parts of the method into their own methods and call them instead of the original method.
+function setValue($name, $value) {
+  if ($name === "height") {
+    $height = $value;
+    return;
+  }
+  if ($name === "width") {
+    $width = $value;
+    return;
+  }
+  assert("Should never reach here");
+}
+
+// Solution:
+function setHeight($arg) {
+  $height = $arg;
+}
+function setWidth($arg) {
+  $width = $arg;
+}
+
+//* 5. Preserve Whole Object: You get several values from an object and then pass them as parameters to a method.
+// Instead, try passing the whole object.
+
+//* 6. Replace Parameter with Method Call:
+class Order
+{
+    public function applyDiscount(float $totalPrice): float
+    {
+        return $totalPrice * 0.9; // 10% discount
+    }
+
+    public function getTotal(): float
+    {
+        return 1000;
+    }
+}
+
+// Usage
+$order = new Order();
+$total = $order->getTotal();
+$final = $order->applyDiscount($total);
+
+// Solution:
+class Order2
+{
+    public function applyDiscount(): float
+    {
+        return $this->getTotal() * 0.9;
+    }
+
+    public function getTotal(): float
+    {
+        return 1000;
+    }
+}
+// Usage
+$order = new Order2();
+$final = $order->applyDiscount();
 
 
+//* 7. Introduce Parameter Object: Your methods contain a repeating group of parameters.
+// Replace these parameters with an object.
+
+//*8: Remove Setting Method: If a field should never change after object creation,
+// don’t provide a setter for it.
+class Order3
+{
+    private int $id;
+
+    public function setId(int $id): void
+    {
+        $this->id = $id;
+    }
+
+    public function getId(): int
+    {
+        return $this->id;
+    }
+} // Now, anyone can change the order identity, breaks identity and data integrity.
+// Solution: 
+class Order4
+{
+    private int $id;
+
+    public function __construct(int $id)
+    {
+        $this->id = $id;
+    }
+
+    public function getId(): int
+    {
+        return $this->id;
+    }
+}
+
+//*8: Hide Method: A method isn’t used by other classes or is used only inside its own class hierarchy.
+// Make the method private or protected.
+
+//*8: Replace Constructor with Factory Method: If a constructor does too much work (logic, decisions, validation, setup),
+// Move that logic into a factory method and keep the constructor simple.
+class User
+{
+    private string $email;
+    private string $role;
+    private bool $active;
+
+    public function __construct(string $email, bool $isAdmin)
+    {
+        $this->email = strtolower(trim($email));
+
+        if (!filter_var($this->email, FILTER_VALIDATE_EMAIL)) {
+            throw new InvalidArgumentException('Invalid email');
+        }
+
+        if ($isAdmin) {
+            $this->role = 'admin';
+            $this->active = true;
+        } else {
+            $this->role = 'user';
+            $this->active = false;
+        }
+    }
+}
+// Solution
+class User2
+{
+    private string $email;
+    private string $role;
+    private bool $active;
+
+    // Constructor is now simple and predictable
+    private function __construct(string $email, string $role, bool $active)
+    {
+        $this->email = $email;
+        $this->role = $role;
+        $this->active = $active;
+    }
+
+    // Factory method for normal users
+    public static function createUser(string $email): self
+    {
+        return new self(
+            self::normalizeEmail($email),
+            'user',
+            false
+        );
+    }
+
+    // Factory method for admin users
+    public static function createAdmin(string $email): self
+    {
+        return new self(
+            self::normalizeEmail($email),
+            'admin',
+            true
+        );
+    }
+
+    private static function normalizeEmail(string $email): string
+    {
+        $email = strtolower(trim($email));
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            throw new InvalidArgumentException('Invalid email');
+        }
+
+        return $email;
+    }
+}
+
+//*9: Replace Error Code with Exception: A method returns a special value that indicates an error.
+// Throw an exception instead.
+
+//*9: Replace Exception with Test: You throw an exception in a place where a simple test would do the job
+// Replace the exception with a condition test via if.
+
+//** 10. Code Smells: */
+//* 1. Long Method Bloater: any method longer than ten lines should make you start asking questions.
+// something is always being added to a method but nothing is ever taken out, that's bad.
+// Tratment: Extract Method, if you feel the need to comment on something inside a method, you should take this code and put it in a new method.
+// Even a single line can and should be split off into a separate method, if it requires explanations. 
 //* 1. Large Class Bloater: A class contains many fields/methods/lines of code.
 // Treatment: Extract class, Extract Sub class, Extract Interface.
