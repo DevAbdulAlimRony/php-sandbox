@@ -904,3 +904,218 @@ class PaymentController extends Controller {
 }
 // Now, subscription can be monthly or yearly or lifetime etc.
 // So, we can make new bridges.
+
+// **Composite/ObjectTree Pattern:
+// Composite is a structural design pattern that lets you compose objects into tree structures and then work with these structures as if they were individual objects.
+// Using the Composite pattern makes sense only when the core model of your app can be represented as a tree.
+// For example, imagine that you have two types of objects: Products and Boxes. A Box can contain several Products as well as a number of smaller Boxes. These little Boxes can also hold some Products or even smaller Boxes, and so on.
+// The Composite pattern suggests that you work with Products and Boxes through a common interface which declares a method for calculating the total price.
+// Examples: Organization Hierarchy: An "Employee" is a leaf; a "Department" is a composite containing employees and sub-departments.
+// Menu Systems: A "Menu Item" (link) is a leaf; a "Menu Category" (dropdown) is a composite containing links and other sub-menus.
+/**
+ * Composite Design Pattern (Real-life example):
+ * ------------------------------------------------------------
+ * Use-case: Company org chart / team structure
+ *
+ * - Leaf: Employee (cannot contain children)
+ * - Composite: Manager (can contain Employees and other Managers)
+ *
+ * Benefit:
+ * You can treat a single Employee and a whole Manager/team
+ * using the same interface: ->getSalary(), ->printStructure(), etc.
+ */
+
+/**
+ * Component
+ * Every node in the tree (Employee or Manager) follows this interface.
+ */
+interface OrgUnit
+{
+    public function getName(): string;
+
+    /**
+     * Real-life meaning: monthly salary cost of this unit.
+     * - For Employee: their own salary
+     * - For Manager: their salary + all subordinates' salaries
+     */
+    public function getMonthlyCost(): float;
+
+    /**
+     * Print org chart tree in a readable structure
+     */
+    public function printStructure(int $level = 0): void;
+}
+
+/**
+ * Leaf
+ * A simple Employee: has no children.
+ */
+class Employee implements OrgUnit
+{
+    public function __construct(
+        private string $name,
+        private float $monthlySalary
+    ) {}
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function getMonthlyCost(): float
+    {
+        // Leaf cost is just its own salary
+        return $this->monthlySalary;
+    }
+
+    public function printStructure(int $level = 0): void
+    {
+        echo str_repeat("  ", $level) . "- Employee: {$this->name} (৳{$this->monthlySalary})\n";
+    }
+}
+
+/**
+ * Composite
+ * A Manager can contain Employees and other Managers.
+ */
+class Manager implements OrgUnit
+{
+    /** @var OrgUnit[] */
+    private array $children = [];
+
+    public function __construct(
+        private string $name,
+        private float $monthlySalary
+    ) {}
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    /**
+     * Add a child node (Employee or another Manager).
+     */
+    public function add(OrgUnit $unit): void
+    {
+        $this->children[] = $unit;
+    }
+
+    /**
+     * Remove a child node by matching name (simple approach).
+     * In real apps you might remove by ID/reference.
+     */
+    public function removeByName(string $name): void
+    {
+        $this->children = array_values(array_filter(
+            $this->children,
+            fn (OrgUnit $unit) => $unit->getName() !== $name
+        ));
+    }
+
+    public function getMonthlyCost(): float
+    {
+        // Manager cost includes their own salary + cost of all subordinates
+        $total = $this->monthlySalary;
+
+        foreach ($this->children as $child) {
+            $total += $child->getMonthlyCost(); // Works for Employee AND Manager (composite magic)
+        }
+
+        return $total;
+    }
+
+    public function printStructure(int $level = 0): void
+    {
+        echo str_repeat("  ", $level) . "+ Manager: {$this->name} (৳{$this->monthlySalary})\n";
+
+        // Print all children under this manager
+        foreach ($this->children as $child) {
+            $child->printStructure($level + 1);
+        }
+    }
+}
+
+/**
+ * -------------------------
+ * Real-life usage example
+ * -------------------------
+ * Build an org chart like:
+ *
+ * CEO
+ *  - CTO
+ *     - Dev1
+ *     - Dev2
+ *  - Finance Manager
+ *     - Accountant
+ */
+
+$ceo = new Manager("CEO", 300000);
+
+$cto = new Manager("CTO", 200000);
+$cto->add(new Employee("Dev-1", 80000));
+$cto->add(new Employee("Dev-2", 85000));
+
+$financeManager = new Manager("Finance Manager", 150000);
+$financeManager->add(new Employee("Accountant", 70000));
+
+$ceo->add($cto);
+$ceo->add($financeManager);
+
+// Print org structure (treating everything uniformly)
+echo "=== ORG STRUCTURE ===\n";
+$ceo->printStructure();
+
+// Get total monthly salary cost of the whole company under CEO
+echo "\n=== TOTAL MONTHLY COST ===\n";
+echo "Total Monthly Cost under {$ceo->getName()}: ৳" . $ceo->getMonthlyCost() . "\n";
+
+// Example: you can also calculate cost for a sub-team only (CTO department)
+echo "\nCTO Department Monthly Cost: ৳" . $cto->getMonthlyCost() . "\n";
+
+// Example: Menu System
+// This example demonstrates how to render a nested HTML navigation menu. The render() call on the top-level menu automatically triggers rendering for all sub-items.
+interface MenuComponent {
+    public function render(): string;
+}
+
+// Leaf: A simple link
+class MenuItem implements MenuComponent {
+    public function __construct(private string $title, private string $url) {}
+
+    public function render(): string {
+        return "<li><a href='{$this->url}'>{$this->title}</a></li>";
+    }
+}
+
+// Composite: A dropdown or category
+class MenuCategory implements MenuComponent {
+    private array $items = [];
+
+    public function __construct(private string $title) {}
+
+    public function add(MenuComponent $item): void {
+        $this->items[] = $item;
+    }
+
+    public function render(): string {
+        $html = "<li><strong>{$this->title}</strong><ul>";
+        foreach ($this->items as $item) {
+            $html .= $item->render();
+        }
+        $html .= "</ul></li>";
+        return $html;
+    }
+}
+
+// Usage
+$services = new MenuCategory("Services");
+$services->add(new MenuItem("Web Design", "/design"));
+$services->add(new MenuItem("SEO", "/seo"));
+
+$mainMenu = new MenuCategory("Main Menu");
+$mainMenu->add(new MenuItem("Home", "/"));
+$mainMenu->add($services); // Nesting a composite inside a composite
+$mainMenu->add(new MenuItem("Contact", "/contact"));
+
+echo "<ul>" . $mainMenu->render() . "</ul>";
