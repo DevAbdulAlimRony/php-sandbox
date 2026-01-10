@@ -555,13 +555,77 @@ class User2
 //*9: Replace Error Code with Exception: A method returns a special value that indicates an error.
 // Throw an exception instead.
 
-//*9: Replace Exception with Test: You throw an exception in a place where a simple test would do the job
+//*10: Replace Exception with Test: You throw an exception in a place where a simple test would do the job
 // Replace the exception with a condition test via if.
+
+//** 5. Dealing with Generalization: */
+//* 1. Pull Up Field: Two classes have the same field, Remove the field from subclasses and move it to the superclass.
+//* 2. Pull Up Method: Your subclasses have methods that perform similar work. Make the methods identical and then move them to the relevant superclass.
+//* 3. Your subclasses have constructors with code that’s mostly identical. Create a superclass constructor and move the code that’s the same in the subclasses to it. Call the superclass constructor in the subclass constructors.
+//* 4. Push Down Method, Push Down Field: Opposite Concepts.
+//* 5. Extract Subclass: A class has features that are used only in certain cases. Create a subclass and use it in these cases.
+//* 6. Extract Superclass: You have two classes with common fields and methods. Create a shared superclass for them and move all the identical fields and methods to it.
+//* 7. Extract Interface: Multiple clients are using the same part of a class interface or  part of the interface in two classes is the same. Move this identical portion to its own interface.
+//* 8. You have a class hierarchy in which a subclass is practically the same as its superclass. Merge the subclass and superclass.
+//* 9. Form Template Method: Your subclasses implement algorithms that contain similar steps in the same order. Move the algorithm structure and identical steps to a superclass, and leave implementation of the different steps in the subclasses.
+//* 10. Replace Inheritance with Delegation: You have a subclass that uses only a portion of the methods of its superclass, Create a field and put a superclass object in it, delegate methods to the superclass object, and get rid of inheritance.
+class EmailService
+{
+    public function sendEmail(string $to, string $message): void
+    {
+        echo "Email sent to $to: $message";
+    }
+
+    public function connectSMTP(): void
+    {
+        echo "SMTP connected";
+    }
+
+    public function logEmail(): void
+    {
+        echo "Email logged";
+    }
+}
+
+class UserNotification extends EmailService
+{
+    public function notify(string $email): void
+    {
+        $this->sendEmail($email, 'Welcome to CRM'); // Using just sendEmail
+    }
+}
+// Solution:
+class EmailService2
+{
+    public function sendEmail(string $to, string $message): void
+    {
+        echo "Email sent to $to: $message";
+    }
+}
+class UserNotification2
+{
+    private EmailService $emailService;
+
+    public function __construct(EmailService $emailService)
+    {
+        $this->emailService = $emailService;
+    }
+
+    public function notify(string $email): void
+    {
+        $this->emailService->sendEmail($email, 'Welcome to CRM');
+    }
+}
+//* 11: Replace Delegation with Inheritance: A class contains many simple methods that delegate to all methods of another class. 
+// Make the class a delegate inheritor, which makes the delegating methods unnecessary.
 
 //** 10. Code Smells: */
 //* 1. Long Method Bloater: any method longer than ten lines should make you start asking questions.
 // something is always being added to a method but nothing is ever taken out, that's bad.
 // Tratment: Extract Method, if you feel the need to comment on something inside a method, you should take this code and put it in a new method.
-// Even a single line can and should be split off into a separate method, if it requires explanations. 
-//* 1. Large Class Bloater: A class contains many fields/methods/lines of code.
+// Even a single line can and should be split off into a separate method, if it requires explanations.
+
+//* 2. Large Class Bloater: A class contains many fields/methods/lines of code.
 // Treatment: Extract class, Extract Sub class, Extract Interface.
+
+//* 2. Primitive Obsession: 
