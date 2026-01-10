@@ -628,4 +628,57 @@ class UserNotification2
 //* 2. Large Class Bloater: A class contains many fields/methods/lines of code.
 // Treatment: Extract class, Extract Sub class, Extract Interface.
 
-//* 2. Primitive Obsession: 
+//* 3. Primitive Obsession: If you have a large variety of primitive fields, it may be possible to logically group some of them into their own class.
+// Try replace data value with object.
+
+//* 4. Long Parameter List: More than three or four parameters for a method smells.
+// Check what values are passed to parameters. If some of the arguments are just results of method calls of another object, use Replace Parameter with Method Call. 
+// Instead of passing a group of data received from another object as parameters, pass the object itself to the method, by using Preserve Whole Object.
+// if these parameters are coming from different sources, you can pass them as a single parameter object via Introduce Parameter Object.
+
+//* 4. Switch Statements: You have a complex switch operator or sequence of if statements.
+// To isolate switch and put it in the right class, you may need Extract Method and then Move Method.
+// If a switch is based on type code, such as when the program’s runtime mode is switched, use Replace Type Code with Subclasses or Replace Type Code with State/Strategy.
+// After specifying the inheritance structure, use Replace Conditional with Polymorphism.
+// If one of the conditional options is null, use Introduce Null Object.
+
+//* 5. Divergent Change: You find yourself having to change many unrelated methods when you make changes to a class. For example, when adding a new product type you have to change the methods for finding, displaying, and ordering products.
+// Often these divergent modifications are due to poor program structure or "copypasta programming”.
+// Split up the behavior of the class via Extract Class.
+// If different classes have the same behavior, you may want to combine the classes through inheritance (Extract Superclass and Extract Subclass).
+
+//* 6. Shotgun Surgery: Making any modifications requires that you make many small changes to many different classes.
+// A single responsibility has been split up among a large number of classes. This can happen after overzealous application of Divergent Change.
+// Use Move Method and Move Field to move existing class behaviors into a single class. If there’s no class appropriate for this, create a new one.
+// If moving code to the same class leaves the original classes almost empty, try to get rid of these now-redundant classes via Inline Class.
+
+//* 7. Whenever you create a subclass for a class, you find yourself needing to create a subclass for another class.
+// You may de-duplicate parallel class hierarchies in two steps. First, make instances of one hierarchy refer to instances of another hierarchy. Then, remove the hierarchy in the referred class, by using Move Method and Move Field.
+
+//* 8. A method is filled with explanatory comments.
+// If a comment is intended to explain a complex expression, the expression should be split into understandable subexpressions using Extract Variable.
+// If a comment explains a section of code, this section can be turned into a separate method via Extract Method.
+// If a method has already been extracted, but comments are still necessary to explain what the method does, give the method a self-explanatory name. 
+// If you need to assert rules about a state that’s necessary for the system to work, use Introduce Assertion.
+
+//* 9. Duplicate Code: Two code fragments look almost identical.
+// If the same code is found in two or more methods in the same class: use Extract Method and place calls for the new method in both places.
+
+//* 10. Lazy Class: Understanding and maintaining classes always costs time and money. So if a class doesn’t do enough to earn your attention, it should be deleted.
+
+//* 11. Data Class: A data class refers to a class that contains only fields and crude methods for accessing them (getters and setters). 
+// If a class contains public fields, use Encapsulate Field to hide them from direct access and require that access be performed via getters and setters only.
+// Use Encapsulate Collection for data stored in collections (such as arrays).
+
+//* 12. A variable, parameter, field, method or class is no longer used (usually because it’s obsolete).
+// Delete unused code and unneeded files. remove unneeded parameter
+
+//* 13. Feature Envy: A method accesses the data of another object more than its own data.
+// If a method clearly should be moved to another place, use Move Method.
+// If only part of a method accesses the data of another object, use Extract Method to move the part in question.
+
+//* 14. Inappropriate Intimacy: One class uses the internal fields and methods of another class.
+// The simplest solution is to use Move Method and Move Field to move parts of one class to the class in which those parts are used. But this works only if the first class truly doesn’t need these parts.'
+
+//* 15. In code you see a series of calls resembling $a->b()->c()->d()
+// To delete a message chain, use Hide Delegate.
