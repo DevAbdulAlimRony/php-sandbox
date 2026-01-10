@@ -1119,3 +1119,368 @@ $mainMenu->add($services); // Nesting a composite inside a composite
 $mainMenu->add(new MenuItem("Contact", "/contact"));
 
 echo "<ul>" . $mainMenu->render() . "</ul>";
+
+// **Decorator Pattern:
+// Decorator is a structural design pattern that lets you attach new behaviors to objects by placing these objects inside special wrapper objects that contain the behaviors.
+// Example: Today you are notifying via email, tomorrow you need slack, facebook, telegram notifications.
+// Coffee Customization: You start with a basic coffee. You can "decorate" it with milk, sugar, whipped cream, or caramel. Each topping increases the price and adds a flavor, but the core object is still a coffee.
+// Car Features: Imagine buying a base model car. You can add a sunroof, a high-end sound system, or heated seats. You aren't building a "CarWithSunroofAndHeatedSeats" class; you are wrapping the base car with optional features.
+// Pizza toppings: Base pizza → +Cheese → +Olives → +Chicken
+// Web request middleware: request handler → +Auth → +Rate limit → +Logging
+// File streams: file stream → +Buffering → +Compression → +Encryption
+// Without Decorator, you would need many subclasses for every combination of add-ons.
+// Decorator solves it by letting you wrap a base object with multiple “add-on” objects at runtime.
+/**
+ * Component interface:
+ * Everything that can be ordered as a "Beverage" must provide:
+ * - getDescription()
+ * - cost()
+ */
+interface Beverage
+{
+    public function getDescription(): string;
+    public function cost(): float;
+}
+
+/**
+ * Concrete Component:
+ * A basic coffee with no add-ons.
+ */
+class Espresso implements Beverage
+{
+    public function getDescription(): string
+    {
+        return "Espresso";
+    }
+
+    public function cost(): float
+    {
+        return 120.00;
+    }
+}
+
+/**
+ * Base Decorator:
+ * Holds a Beverage and implements Beverage too.
+ * This is the key: decorators have the SAME interface as the object they wrap.
+ */
+abstract class AddOnDecorator implements Beverage
+{
+    protected Beverage $beverage;
+
+    public function __construct(Beverage $beverage)
+    {
+        $this->beverage = $beverage;
+    }
+
+    // By default, delegate to wrapped object
+    public function getDescription(): string
+    {
+        return $this->beverage->getDescription();
+    }
+
+    abstract public function cost(): float;
+}
+
+/**
+ * Concrete Decorator: Milk
+ * Adds Milk description + extra cost on top of wrapped beverage.
+ */
+class Milk extends AddOnDecorator
+{
+    public function getDescription(): string
+    {
+        return $this->beverage->getDescription() . ", Milk";
+    }
+
+    public function cost(): float
+    {
+        return $this->beverage->cost() + 20.00;
+    }
+}
+
+/**
+ * Concrete Decorator: Caramel
+ */
+class Caramel extends AddOnDecorator
+{
+    public function getDescription(): string
+    {
+        return $this->beverage->getDescription() . ", Caramel";
+    }
+
+    public function cost(): float
+    {
+        return $this->beverage->cost() + 30.00;
+    }
+}
+
+/**
+ * Concrete Decorator: WhippedCream
+ */
+class WhippedCream extends AddOnDecorator
+{
+    public function getDescription(): string
+    {
+        return $this->beverage->getDescription() . ", Whipped Cream";
+    }
+
+    public function cost(): float
+    {
+        return $this->beverage->cost() + 25.00;
+    }
+}
+
+/* -------------------------
+   ✅ Real usage (runtime composition)
+   ------------------------- */
+
+// Start with a base coffee
+$order = new Espresso();
+
+// Customer wants: Espresso + Milk + Caramel + Whipped Cream
+$order = new Milk($order);
+$order = new Caramel($order);
+$order = new WhippedCream($order);
+
+echo $order->getDescription() . PHP_EOL;
+echo "Total: " . $order->cost() . " BDT" . PHP_EOL;
+
+/*
+Output:
+Espresso, Milk, Caramel, Whipped Cream
+Total: 195 BDT
+*/
+
+// **Facade Pattern: Facade is a structural design pattern that provides a simplified interface to a library, a framework, or any other complex set of classes.
+// Imagine that you must make your code work with a broad set of objects that belong to a sophisticated library or framework.
+// Ordinarily, you’d need to initialize all of those objects, keep track of dependencies, execute methods in the correct order, and so on.
+// A facade is a class that provides a simple interface to a complex subsystem which contains lots of moving parts.
+// Online Shopping: When you click "Place Order," the system checks inventory, verifies your credit card, calculates shipping, and sends a confirmation email. You only see one button; the Facade handles the rest.
+// Facade provides a simple interface to a complex system.
+// It hides internal complexity and exposes one clear entry point for the client.
+
+// Wihout Facade:
+// $inventory = new InventoryService();
+// $inventory->checkStock($productId);
+
+// $payment = new PaymentService();
+// $payment->charge($userId, $amount);
+
+// $order = new OrderService();
+// $order->create($userId, $productId);
+
+// $notification = new NotificationService();
+// $notification->send($userId);
+
+// With Facade:
+class InventoryService
+{
+    public function checkStock(int $productId): void
+    {
+        // check stock availability
+    }
+}
+
+class PaymentService2
+{
+    public function charge(int $userId, float $amount): void
+    {
+        // process payment
+    }
+}
+
+class OrderService2
+{
+    public function create(int $userId, int $productId): void
+    {
+        // save order
+    }
+}
+
+class NotificationService
+{
+    public function send(int $userId): void
+    {
+        // send email/SMS
+    }
+}
+
+/**
+ * Facade:
+ * Provides a simple interface for placing an order.
+ * Hides all internal complexity.
+ */
+class OrderFacade
+{
+    private InventoryService $inventory;
+    private PaymentService2 $payment;
+    private OrderService2 $order;
+    private NotificationService $notification;
+
+    public function __construct()
+    {
+        $this->inventory = new InventoryService();
+        $this->payment = new PaymentService2();
+        $this->order = new OrderService2();
+        $this->notification = new NotificationService();
+    }
+
+    /**
+     * One simple method to place an order
+     */
+    public function placeOrder(
+        int $userId,
+        int $productId,
+        float $amount
+    ): void {
+        $this->inventory->checkStock($productId);
+        $this->payment->charge($userId, $amount);
+        $this->order->create($userId, $productId);
+        $this->notification->send($userId);
+    }
+}
+$orderFacade = new OrderFacade();
+$orderFacade->placeOrder(10, 501, 2500.00);
+
+// **Flyweight Pattern: The Flyweight Pattern is primarily used for optimization. It is designed to reduce memory usage when you need to create a vast number of similar objects (thousands or millions).
+// Example: In a professional text editor (like MS Word), every single character on the page could be an object.
+// The Problem: A 500-page book has roughly 1,000,000 characters. If each character is an object containing font type, size, and the glyph (image data), you'd need gigabytes of RAM just for text.
+// The Flyweight Solution: You create only 26 "Flyweight" objects (one for each letter of the alphabet). Each object stores the font and shape. The "unique" part (the position on the page) is passed to the character object only when it needs to be drawn.
+// 1. The Flyweight: This stores the "Intrinsic" state (The heavy data)
+class TreeType {
+    private $name;
+    private $color;
+    private $texture; // Imagine this is a large binary blob
+
+    public function __construct($name, $color, $texture) {
+        $this->name = $name;
+        $this->color = $color;
+        $this->texture = $texture;
+    }
+
+    public function draw($x, $y) {
+        echo "Drawing a '{$this->name}' tree at ($x, $y) with color '{$this->color}'.\n";
+    }
+}
+
+// 2. The Flyweight Factory: Manages and reuses the TreeType objects
+class TreeFactory {
+    private static $treeTypes = [];
+
+    public static function getTreeType($name, $color, $texture) {
+        $key = $name . "_" . $color;
+        if (!isset(self::$treeTypes[$key])) {
+            echo "--- Creating a NEW TreeType: $name ---\n";
+            self::$treeTypes[$key] = new TreeType($name, $color, $texture);
+        }
+        return self::$treeTypes[$key];
+    }
+}
+
+// 3. The Contextual Object: Stores the "Extrinsic" state (Unique data)
+class Tree {
+    private $x;
+    private $y;
+    private $type; // Reference to the Flyweight
+
+    public function __construct($x, $y, TreeType $type) {
+        $this->x = $x;
+        $this->y = $y;
+        $this->type = $type;
+    }
+
+    public function render() {
+        $this->type->draw($this->x, $this->y);
+    }
+}
+
+// --- Client Code ---
+
+$trees = [];
+$textures = ["RoughBark.png", "SmoothBark.png"];
+
+// Create 1,000 trees, but only 2 types!
+for ($i = 0; $i < 1000; $i++) {
+    $x = rand(0, 100);
+    $y = rand(0, 100);
+    
+    // We alternate between Oak and Pine
+    if ($i % 2 == 0) {
+        $type = TreeFactory::getTreeType("Oak", "Green", $textures[0]);
+    } else {
+        $type = TreeFactory::getTreeType("Pine", "Dark Green", $textures[1]);
+    }
+    
+    $trees[] = new Tree($x, $y, $type);
+}
+
+// Even though we have 1,000 Tree objects, we only have TWO TreeType objects in memory.
+echo "Total trees created: " . count($trees) . "\n";
+
+// **Proxy Pattern: Proxy is a structural design pattern that lets you provide a substitute or placeholder for another object. 
+// Here is an example: you have a massive object that consumes a vast amount of system resources. You need it from time to time, but not always.
+// You could implement lazy initialization: create this object only when it’s actually needed. All of the object’s clients would need to execute some deferred initialization code. Unfortunately, this would probably cause a lot of code duplication.
+// Instead of calling the real object directly, the client calls the proxy, and the proxy decides: when to create the real object etc.
+// Proxy is needed when: large file, remote API, heavy DB operation, (authorization, permissions), Lazy loading is needed (load only when required)
+// Real life example: Bank ATM System: You don’t access the bank vault directly, ATM checks PIN → balance → permissions → then gives moneys.
+// Office Reception: ou cannot enter the office directly, Reception checks ID and permission
+// Image loading on websites (Virtual Proxy): Large images load only when visible, Until then, a placeholder is shown.
+// API Gateway (Remote Proxy): Client calls gateway, Gateway calls multiple backend services
+// Example: Lazy-loading a Large Report (Virtual Proxy)
+
+/**
+ * Subject interface
+ * Both Real object and Proxy must implement this
+ */
+interface Report
+{
+    public function display(): void;
+}
+/**
+ * RealSubject
+ * This class is expensive to create
+ */
+class SalesReport implements Report
+{
+    public function __construct()
+    {
+        // Simulate heavy operation (DB query, calculation)
+        sleep(3); // expensive setup
+        echo "SalesReport generated...\n";
+    }
+
+    public function display(): void
+    {
+        echo "Displaying full sales report\n";
+    }
+}
+/**
+ * Proxy
+ * Controls access to SalesReport
+ * Creates it only when required (lazy loading)
+ */
+class SalesReportProxy implements Report
+{
+    private ?SalesReport $realReport = null;
+
+    public function display(): void
+    {
+        // Create real object ONLY when needed
+        if ($this->realReport === null) {
+            $this->realReport = new SalesReport();
+        }
+
+        // Delegate the call
+        $this->realReport->display();
+    }
+}
+$report = new SalesReportProxy();
+
+echo "User logged in\n";
+// No report generated yet
+
+echo "User clicks 'View Report'\n";
+$report->display();
+
+
