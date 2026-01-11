@@ -1483,4 +1483,248 @@ echo "User logged in\n";
 echo "User clicks 'View Report'\n";
 $report->display();
 
+// *Chain of Responsibility Pattern: behavioral design pattern that allows you to pass requests along a chain of handlers. 
+// Upon receiving a request, each handler decides either to process the request or to pass it to the next handler in the chain.
+// Examples: Middleware in Web Frameworks, Customer Support Systems, Approval Workflows
+// Implementation1: we’ll build a support ticket handler where different departments handle specific types of issues.
 
+// Contract for every "link" in the chain.
+interface Handler {
+    public function setNext(Handler $handler): Handler;
+    public function handle(string $request): ?string;
+}
+// Boilerplate code for chaining, so concrete handlers only focus on their specific logic.
+abstract class AbstractHandler implements Handler {
+    private ?Handler $nextHandler = null;
+
+    public function setNext(Handler $handler): Handler {
+        $this->nextHandler = $handler;
+        return $handler; // Returning the handler allows for "fluent" chaining
+    }
+
+    public function handle(string $request): ?string {
+        if ($this->nextHandler) {
+            return $this->nextHandler->handle($request);
+        }
+        return "No department could handle this request: " . $request;
+    }
+}
+// Concrete Handlers
+class BasicSupport extends AbstractHandler {
+    public function handle(string $request): ?string {
+        if ($request === "password_reset") {
+            return "Basic Support: Handled the password reset.\n";
+        }
+        return parent::handle($request);
+    }
+}
+
+class TechSupport extends AbstractHandler {
+    public function handle(string $request): ?string {
+        if ($request === "server_error") {
+            return "Tech Support: Fixed the server error.\n";
+        }
+        return parent::handle($request);
+    }
+}
+
+class BillingSupport extends AbstractHandler {
+    public function handle(string $request): ?string {
+        if ($request === "refund_request") {
+            return "Billing Support: Processed the refund.\n";
+        }
+        return parent::handle($request);
+    }
+}
+// Client Code:
+// 1. Create the handlers
+$basic = new BasicSupport();
+$tech = new TechSupport();
+$billing = new BillingSupport();
+
+// 2. Build the chain: Basic -> Tech -> Billing
+$basic->setNext($tech)->setNext($billing);
+
+// 3. Send requests to the start of the chain
+$requests = ["password_reset", "refund_request", "broken_screen"];
+
+foreach ($requests as $req) {
+    echo "Client: Requesting help with '$req'...\n";
+    echo $basic->handle($req) . "\n";
+}
+
+// Example2: 
+class ExpenseReport {
+    public function __construct(
+        public float $amount,
+        public string $purpose
+    ) {}
+}
+interface Approver {
+    public function setNext(Approver $next): Approver;
+    public function approve(ExpenseReport $report): string;
+}
+
+abstract class BaseApprover implements Approver {
+    private ?Approver $nextApprover = null;
+
+    public function setNext(Approver $next): Approver {
+        $this->nextApprover = $next;
+        return $next;
+    }
+
+    protected function passToNext(ExpenseReport $report): string {
+        if ($this->nextApprover) {
+            return $this->nextApprover->approve($report);
+        }
+        return "REJECTED: Amount of \${$report->amount} is too high for all departments.";
+    }
+}
+class Manager2 extends BaseApprover {
+    public function approve(ExpenseReport $report): string {
+        if ($report->amount <= 500) {
+            return "Manager approved '{$report->purpose}' (\${$report->amount}).";
+        }
+        return $this->passToNext($report);
+    }
+}
+
+class Director extends BaseApprover {
+    public function approve(ExpenseReport $report): string {
+        if ($report->amount <= 5000) {
+            return "Director approved '{$report->purpose}' (\${$report->amount}).";
+        }
+        return $this->passToNext($report);
+    }
+}
+
+class CEO extends BaseApprover {
+    public function approve(ExpenseReport $report): string {
+        if ($report->amount <= 50000) {
+            return "CEO approved '{$report->purpose}' (\${$report->amount}).";
+        }
+        return $this->passToNext($report);
+    }
+}
+// Setup the chain
+$manager = new Manager2();
+$director = new Director();
+$ceo = new CEO();
+
+// Manager -> Director -> CEO
+$manager->setNext($director)->setNext($ceo);
+
+// Test cases
+$reports = [
+    new ExpenseReport(150, "Office Supplies"),
+    new ExpenseReport(2500, "New Laptop"),
+    new ExpenseReport(15000, "Trade Show Booth"),
+    new ExpenseReport(100000, "Private Jet") // This will exceed the chain
+];
+
+foreach ($reports as $report) {
+    echo $manager->approve($report) . PHP_EOL;
+}
+
+// *Command Pattern: Focuses on encapsulating a request as an object.
+// This allows you to parameterize clients with different requests, queue or log requests, and support undoable operations.
+class BankAccount {
+    private float $balance = 0;
+
+    public function __construct(private string $accountNumber) {}
+
+    public function deposit(float $amount): void {
+        $this->balance += $amount;
+        echo "Deposited \${$amount}. New Balance: \${$this->balance}" . PHP_EOL;
+    }
+
+    public function withdraw(float $amount): bool {
+        if ($this->balance >= $amount) {
+            $this->balance -= $amount;
+            echo "Withdrew \${$amount}. New Balance: \${$this->balance}" . PHP_EOL;
+            return true;
+        }
+        echo "Insufficient funds for withdrawal of \${$amount}." . PHP_EOL;
+        return false;
+    }
+
+    public function getBalance(): float {
+        return $this->balance;
+    }
+}
+interface Transaction2 {
+    public function execute(): bool;
+    public function undo(): void;
+}
+class DepositCommand implements Transaction2 {
+    public function __construct(
+        private BankAccount $account, 
+        private float $amount
+    ) {}
+
+    public function execute(): bool {
+        $this->account->deposit($this->amount);
+        return true;
+    }
+
+    public function undo(): void {
+        $this->account->withdraw($this->amount);
+    }
+}
+
+class WithdrawCommand implements Transaction2 {
+    private bool $succeeded = false;
+
+    public function __construct(
+        private BankAccount $account, 
+        private float $amount
+    ) {}
+
+    public function execute(): bool {
+        $this->succeeded = $this->account->withdraw($this->amount);
+        return $this->succeeded;
+    }
+
+    public function undo(): void {
+        if ($this->succeeded) {
+            $this->account->deposit($this->amount);
+        }
+    }
+}
+class TransactionManager {
+    private array $history = [];
+
+    public function process(Transaction2 $transaction): void {
+        if ($transaction->execute()) {
+            $this->history[] = $transaction;
+        }
+    }
+
+    public function undoLast(): void {
+        if (!empty($this->history)) {
+            $transaction = array_pop($this->history);
+            echo "Undoing last transaction..." . PHP_EOL;
+            $transaction->undo();
+        } else {
+            echo "No transactions to undo." . PHP_EOL;
+        }
+    }
+}
+$myAccount = new BankAccount("12345-PHP");
+$manager = new TransactionManager();
+
+// 1. Perform a deposit
+$deposit = new DepositCommand($myAccount, 1000);
+$manager->process($deposit); 
+
+// 2. Perform a withdrawal
+$withdrawal = new WithdrawCommand($myAccount, 200);
+$manager->process($withdrawal);
+
+// 3. Perform another withdrawal
+$manager->process(new WithdrawCommand($myAccount, 50));
+
+// 4. Whoops! The last withdrawal of 50 was a mistake. Undo it.
+$manager->undoLast();
+
+echo "Final Balance: $" . $myAccount->getBalance() . PHP_EOL;
