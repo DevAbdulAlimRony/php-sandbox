@@ -1728,3 +1728,247 @@ $manager->process(new WithdrawCommand($myAccount, 50));
 $manager->undoLast();
 
 echo "Final Balance: $" . $myAccount->getBalance() . PHP_EOL;
+
+// **Iterator Pattern: Iterator is a behavioral design pattern that lets you traverse elements of a collection without exposing its underlying representation (list, stack, tree, etc.).
+// The main idea of the Iterator pattern is to extract the traversal behavior of a collection into a separate object called an iterator.
+// Example: Social Media Feeds: An iterator can traverse your "Friend List," regardless of whether that list is stored in a local cache or fetched page-by-page from a database.
+// File Systems: Iterating through folders and subfolders (Depth-First vs. Breadth-First search).
+// PHP actually has a built-in interface called Iterator that makes implementing this pattern very standard.
+// In this example, we will implement a "Book" that contains "Chapters," and each chapter contains "Pages."
+// The goal is to traverse every page in the book without the client needing to manage the chapter indexes.
+
+/**
+ * A simple Page class.
+ */
+class Page2 {
+    public function __construct(public string $content) {}
+}
+
+/**
+ * A Chapter class containing multiple Pages.
+ */
+class Chapter {
+    private array $pages = [];
+    public function __construct(public string $title) {}
+
+    public function addPage(string $text): void {
+        $this->pages[] = new Page($text);
+    }
+
+    public function getPages(): array {
+        return $this->pages;
+    }
+}
+
+/**
+ * The Book (Collection) containing Chapters.
+ */
+class Book {
+    private array $chapters = [];
+
+    public function addChapter(Chapter $chapter): void {
+        $this->chapters[] = $chapter;
+    }
+
+    public function getChapters(): array {
+        return $this->chapters;
+    }
+
+    // Returns the iterator that flattens the book
+    public function getPageIterator(): BookPageIterator {
+        return new BookPageIterator($this);
+    }
+}
+
+/**
+ * The Iterator: This is the "magic" part. 
+ * It handles the logic of jumping from the last page of Chapter 1 
+ * to the first page of Chapter 2.
+ */
+class BookPageIterator {
+    private Book $book;
+    private int $currentChapterIndex = 0;
+    private int $currentPageIndex = 0;
+
+    public function __construct(Book $book) {
+        $this->book = $book;
+    }
+
+    public function current(): ?Page {
+        $chapters = $this->book->getChapters();
+        if ($this->valid()) {
+            return $chapters[$this->currentChapterIndex]->getPages()[$this->currentPageIndex];
+        }
+        return null;
+    }
+
+    public function next(): void {
+        $chapters = $this->book->getChapters();
+        $currentChapter = $chapters[$this->currentChapterIndex];
+
+        // Move to next page
+        $this->currentPageIndex++;
+
+        // If we run out of pages in this chapter, move to the next chapter
+        if ($this->currentPageIndex >= count($currentChapter->getPages())) {
+            $this->currentChapterIndex++;
+            $this->currentPageIndex = 0;
+        }
+    }
+
+    public function valid(): bool {
+        $chapters = $this->book->getChapters();
+        // Valid if the chapter index exists and that chapter has the current page index
+        return isset($chapters[$this->currentChapterIndex]) && 
+               isset($chapters[$this->currentChapterIndex]->getPages()[$this->currentPageIndex]);
+    }
+}
+
+// --- Usage ---
+
+$myBook = new Book();
+
+$ch1 = new Chapter("Introduction");
+$ch1->addPage("Welcome to the book.");
+$ch1->addPage("This is the first concept.");
+
+$ch2 = new Chapter("Advanced Logic");
+$ch2->addPage("Deep dive into patterns.");
+$ch2->addPage("Conclusion of Chapter 2.");
+
+$myBook->addChapter($ch1);
+$myBook->addChapter($ch2);
+
+// The Client code is now incredibly simple:
+$pageIterator = $myBook->getPageIterator();
+
+echo "Starting to read the book page by page:\n";
+while ($pageIterator->valid()) {
+    $page = $pageIterator->current();
+    echo "Reading: " . $page->content . "\n";
+    $pageIterator->next();
+}
+
+//* Mediator Design Pattern:
+// Mediator is a behavioral design pattern that lets you reduce chaotic dependencies between objects
+// The pattern restricts direct communications between the objects and forces them to collaborate only via a mediator object.
+// Example: Chat Rooms: Participants don't send messages directly to each other's IP addresses. They send a message to the Server, which distributes it to the right people.
+// Smart Home Hubs: Your light switch doesn't talk to your smart bulb. Both talk to the Hub, which executes "scenes."
+// Imagine a complex UI with checkboxes, buttons, and text fields. If checking a "Business Account" box should disable the "Personal Name" field and enable a "Tax ID" field, you might be tempted to put that logic inside the checkbox.
+// as the UI grows, every component starts "talking" to every other component, here need mediator.
+// In Laravel, when you call event(new UserRegistered($user)), the User model doesn't know which classes (Listeners) need to send emails, generate invoices, or update Slack.
+// When you use Bus::dispatch(new ProcessPodcast($podcast)), your Controller doesn't need to know how the podcast is processed or which handler is doing it.
+// You can argue that the Pipeline (used for Middleware) is a specialized version of a mediator.
+
+//* Memento Design Pattern:
+// a behavioral pattern that lets you save and restore the previous state of an object without revealing the details of its implementation.
+// Video Games: "Checkpoints" or "Save Games." You save your current health, inventory, and position to return to them if you die.
+// Browsers: The "Back" button. It stores the state of your navigation history.
+
+//* Observer Design Pattern:
+// The Observer Design Pattern is one of the most famous behavioral patterns.
+// It defines a "one-to-many" dependency: when one object (the Subject) changes state, all its dependents (Observers) are notified and updated automatically.
+// YouTube Subscriptions: When a creator uploads a video (Subject), all subscribers (Observers) get a notification.
+// Newsletter Signups: When a blog posts a new article, all email subscribers are notified.
+// GUI Event Listeners: Clicking a button (Subject) notifies all attached "Click Listeners" (Observers).
+// PHP provides built-in interfaces (SplSubject and SplObserver) to make this pattern easier to implement.
+// In laravel we have: Eloquent Observers, Model Events, Database Listeners.
+/**
+ * The Subject: This class maintains a list of observers 
+ * and notifies them of any state changes.
+ */
+class TechBlog implements \SplSubject {
+    private array $subscribers = [];
+    private array $latestPost = [];
+
+    // Add a new subscriber to the list
+    public function attach(\SplObserver $subscriber): void {
+        $this->subscribers[] = $subscriber;
+    }
+
+    // Remove a subscriber from the list
+    public function detach(\SplObserver $subscriber): void {
+        $key = array_search($subscriber, $this->subscribers, true);
+        if ($key !== false) {
+            unset($this->subscribers[$key]);
+        }
+    }
+
+    // The "Magic": Loop through every subscriber and call their update method
+    public function notify(): void {
+        foreach ($this->subscribers as $subscriber) {
+            $subscriber->update($this);
+        }
+    }
+
+    /**
+     * Business Logic: When a post is published, 
+     * the state changes and notify() is called.
+     */
+    public function publishPost(string $title, string $url): void {
+        $this->latestPost = [
+            'title' => $title,
+            'url'   => $url
+        ];
+
+        echo "Blog: Publishing post '{$title}'...\n";
+        $this->notify();
+    }
+
+    public function getLatestPost(): array {
+        return $this->latestPost;
+    }
+}
+/**
+ * Concrete Observer: Represents an individual email subscriber.
+ */
+class EmailSubscriber implements \SplObserver {
+    public function __construct(private string $email) {}
+
+    public function update(\SplSubject $blog): void {
+        $post = $blog->getLatestPost();
+        
+        // In a real app, this would trigger an actual email sending service
+        echo "Sending Email to [{$this->email}]: New post alert! '{$post['title']}' at {$post['url']}\n";
+    }
+}
+
+/**
+ * Concrete Observer: Perhaps a Push Notification service.
+ */
+class PushNotificationSubscriber implements \SplObserver {
+    public function update(\SplSubject $blog): void {
+        $post = $blog->getLatestPost();
+        echo "Push Notification: Check out '{$post['title']}' now!\n";
+    }
+}
+
+// 1. Initialize the Blog
+$myTechBlog = new TechBlog();
+
+// 2. Create various subscribers
+$user1 = new EmailSubscriber("alice@example.com");
+$user2 = new EmailSubscriber("bob@example.com");
+$mobileApp = new PushNotificationSubscriber();
+
+// 3. Attach them to the blog
+$myTechBlog->attach($user1);
+$myTechBlog->attach($user2);
+$myTechBlog->attach($mobileApp);
+
+// 4. Publish a post - all 3 subscribers are notified automatically
+$myTechBlog->publishPost(
+    "Understanding the Observer Pattern", 
+    "https://techblog.com/patterns/observer"
+);
+
+echo "\n--- Bob unsubscribes ---\n\n";
+
+// 5. Detach a subscriber
+$myTechBlog->detach($user2);
+
+// 6. Next post only notifies the remaining subscribers
+$myTechBlog->publishPost(
+    "Laravel 11 Features", 
+    "https://techblog.com/laravel-11"
+);
