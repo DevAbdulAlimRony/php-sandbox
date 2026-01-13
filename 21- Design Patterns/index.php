@@ -1972,3 +1972,226 @@ $myTechBlog->publishPost(
     "Laravel 11 Features", 
     "https://techblog.com/laravel-11"
 );
+
+//* State Design Pattern:
+// State is a behavioral design pattern that lets an object alter its behavior when its internal state changes.
+// Real life example: Document Approval Workflow, Medita Control State.
+interface DocumentState {
+    public function render(Document $doc): void;
+    public function publish(Document $doc): void;
+    public function approve(Document $doc): void;
+}
+class DraftState implements DocumentState {
+    public function render(Document $doc): void {
+        echo "Rendering Draft: Full editing tools available.\n";
+    }
+
+    public function publish(Document $doc): void {
+        echo "Draft submitted for review.\n";
+        $doc->setState(new ModerationState());
+    }
+
+    public function approve(Document $doc): void {
+        echo "Error: Cannot approve a draft directly. Must go to moderation first.\n";
+    }
+}
+
+class ModerationState implements DocumentState {
+    public function render(Document $doc): void {
+        echo "Rendering Moderation: Document is read-only for the author.\n";
+    }
+
+    public function publish(Document $doc): void {
+        echo "Document is already being moderated.\n";
+    }
+
+    public function approve(Document $doc): void {
+        echo "Document approved by manager.\n";
+        $doc->setState(new PublishedState());
+    }
+}
+
+class PublishedState implements DocumentState {
+    public function render(Document $doc): void {
+        echo "Rendering Published: Document is live on the website.\n";
+    }
+
+    public function publish(Document $doc): void {
+        echo "Document is already published.\n";
+    }
+
+    public function approve(Document $doc): void {
+        echo "Document is already live.\n";
+    }
+}
+class Document {
+    private DocumentState $state;
+
+    public function __construct() {
+        // Initial state is always Draft
+        $this->state = new DraftState();
+    }
+
+    public function setState(DocumentState $state): void {
+        $this->state = $state;
+    }
+
+    public function render(): void {
+        $this->state->render($this);
+    }
+
+    public function publish(): void {
+        $this->state->publish($this);
+    }
+
+    public function approve(): void {
+        $this->state->approve($this);
+    }
+}
+$doc = new Document();
+
+// 1. Start as Draft
+$doc->render();  // Output: Full editing tools available.
+$doc->publish(); // Output: Draft submitted for review.
+
+// 2. Now in Moderation
+$doc->render();  // Output: Document is read-only.
+$doc->approve(); // Output: Document approved by manager.
+
+// 3. Now Published
+$doc->render();  // Output: Document is live on the website.
+
+//* Strategy Design Pattern:
+// Strategy is a behavioral design pattern that lets you define a family of algorithms, put each of them into a separate class, and make their objects interchangeable.
+// It allows you to swap out the algorithm or logic at runtime.
+// Exmp: E-commerce Checkout (Payment Methods- Bkash, Rocket strategy), Navigation Apps (Route Calculation: Driving Strategy, Walking Strategy, Public Transit Strategy), Sorting and Filtering(Quicksort Strategy, MergeSortStrategy)
+interface PaymentStrategy {
+    public function pay(float $amount): void;
+}
+class CreditCardPayment implements PaymentStrategy {
+    public function __construct(private string $name, private string $cardNumber) {}
+
+    public function pay(float $amount): void {
+        echo "Paid $amount using Credit Card (Owner: {$this->name}).\n";
+    }
+}
+
+class PayPalPayment implements PaymentStrategy {
+    public function __construct(private string $email) {}
+
+    public function pay(float $amount): void {
+        echo "Paid $amount using PayPal (Account: {$this->email}).\n";
+    }
+}
+class ShoppingCart {
+    private PaymentStrategy $paymentMethod;
+
+    // We "inject" the strategy here
+    public function setPaymentMethod(PaymentStrategy $method): void {
+        $this->paymentMethod = $method;
+    }
+
+    public function checkout(float $amount): void {
+        $this->paymentMethod->pay($amount);
+    }
+}
+
+// Another:
+interface RouteStrategy {
+    public function buildRoute(string $a, string $b): void;
+}
+class DrivingStrategy implements RouteStrategy {
+    public function buildRoute(string $a, string $b): void {
+        echo "Calculating fastest road route from $a to $b. Avoiding pedestrian zones.\n";
+    }
+}
+
+class WalkingStrategy implements RouteStrategy {
+    public function buildRoute(string $a, string $b): void {
+        echo "Calculating shortest walking path from $a to $b. Including parks and alleys.\n";
+    }
+}
+class Navigator {
+    private RouteStrategy $strategy;
+
+    public function __construct(RouteStrategy $strategy) {
+        $this->strategy = $strategy;
+    }
+
+    public function setStrategy(RouteStrategy $strategy): void {
+        $this->strategy = $strategy;
+    }
+
+    public function showRoute(string $start, string $end): void {
+        $this->strategy->buildRoute($start, $end);
+    }
+}
+// --- Payment Example ---
+$cart = new ShoppingCart();
+
+// User chooses PayPal
+$cart->setPaymentMethod(new PayPalPayment("user@example.com"));
+$cart->checkout(150.00);
+
+// --- Navigation Example ---
+$nav = new Navigator(new DrivingStrategy());
+$nav->showRoute("Home", "Office");
+
+// User clicks the "Walking" icon
+$nav->setStrategy(new WalkingStrategy());
+$nav->showRoute("Home", "Office");
+
+//* Template Method Pattern: 
+// Template Method is a behavioral design pattern that defines the skeleton of an algorithm in the superclass but lets subclasses override specific steps of the algorithm without changing its structure.
+// Imagine you have an application that needs to extract data from various file types (PDF, CSV, Docx), analyze it, and then send a report.
+// Fixed Steps: Open file, Analyze data, Send report, Close file.
+// Variable Steps: How you actually "Extract" data is different for a PDF than for a CSV.
+abstract class BeverageMaker {
+    // The Template Method
+    final public function makeBeverage(): void {
+        $this->boilWater();
+        $this->brew();
+        $this->pourInCup();
+        $this->addCondiments();
+    }
+
+    // Common steps (already implemented)
+    private function boilWater(): void {
+        echo "Boiling water...\n";
+    }
+
+    private function pourInCup(): void {
+        echo "Pouring into cup...\n";
+    }
+
+    // Abstract steps (subclasses must implement)
+    abstract protected function brew(): void;
+    abstract protected function addCondiments(): void;
+}
+class Tea extends BeverageMaker {
+    protected function brew(): void {
+        echo "Steeping the tea bag...\n";
+    }
+
+    protected function addCondiments(): void {
+        echo "Adding lemon.\n";
+    }
+}
+
+class Coffee extends BeverageMaker {
+    protected function brew(): void {
+        echo "Dripping coffee through filter...\n";
+    }
+
+    protected function addCondiments(): void {
+        echo "Adding sugar and milk.\n";
+    }
+}
+
+//* Visitor Desgn Pattern:
+// Visitor is a behavioral design pattern that lets you separate algorithms from the objects on which they operate.
+// The Visitor Design Pattern is one of the more complex behavioral patterns. It allows you to add new operations to a group of objects without modifying the objects themselves.
+// Example: Insurance Policy Broker
+// An insurance company has different types of customers: Residential, Commercial, and Industrial.
+// The Problem: You need to send different types of mailers to them (Marketing, Billing, Regulatory).
+// The Visitor Solution: You create a MarketingVisitor. When it visits a Commercial customer, it offers a "Business Liability" plan. When it visits a Residential customer, it offers "Homeowners Insurance."
